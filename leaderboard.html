@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Serif:ital,wght@1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Devanagari:wght@400;700&display=swap">
-  <link rel="stylesheet" href="/styles.css?v=20260521-3">
+  <link rel="stylesheet" href="/styles.css?v=20260521-4">
 </head>
 <body data-page="leaderboard">
 <div class="tape" aria-hidden="true"><div class="tape__inner">india top 85 · era cuts · subgenre cuts · underrated 50 · all live · all argueable</div></div>
@@ -20,11 +20,13 @@
   <header class="topbar" id="topbar"></header>
 
   <section class="hero" style="padding: 56px 0 24px;">
-    <p class="hero__kicker">live · the leaderboard · simulated for now · real votes when backend ships</p>
+    <p class="hero__kicker">live · ranked by pen game by default · crossovers buried · toggle below for streams</p>
     <h1 class="hero__rep" style="font-size: clamp(80px, 14vw, 160px);">TOP <span class="tilt">85</span></h1>
     <p class="hero__sub" style="font-size: clamp(20px, 2.2vw, 28px);">india's full DHH order. cut by <span class="kw">era</span> or by <span class="kw">subgenre</span>.</p>
     <p class="hero__hook"><span id="lbTotal">calculating votes…</span> · click any artist to open their profile</p>
   </section>
+
+  <div id="lbModeToggle" class="mode-toggle" aria-label="ranking mode"></div>
 
   <nav class="subnav" aria-label="scope">
     <a href="#" data-scope="all" class="scope-tab is-active">all india</a>
@@ -34,11 +36,11 @@
     <a href="#" data-scope="era:New Wave" class="scope-tab">new wave</a>
     <a href="#" data-scope="era:OG" class="scope-tab">OG</a>
     <a href="#" data-scope="sub:Gully Rap" class="scope-tab">gully rap</a>
-    <a href="#" data-scope="sub:Punjabi Rap" class="scope-tab">punjabi rap</a>
     <a href="#" data-scope="sub:Boom Bap / Lo-fi" class="scope-tab">boom bap</a>
     <a href="#" data-scope="sub:Trap" class="scope-tab">trap</a>
     <a href="#" data-scope="sub:Regional-Language" class="scope-tab">regional</a>
     <a href="#" data-scope="underrated" class="scope-tab">underrated 50</a>
+    <a href="#" data-scope="crossovers" class="scope-tab">crossover wing</a>
   </nav>
 
   <div class="lb-list" id="lbList" style="margin-top: 24px;"></div>
@@ -55,6 +57,6 @@
   </footer>
 
 </div>
-<script src="/app.js?v=20260521-3" defer></script>
+<script src="/app.js?v=20260521-4" defer></script>
 </body>
 </html>

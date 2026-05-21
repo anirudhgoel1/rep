@@ -2331,6 +2331,197 @@ body {
   margin-bottom: 14px;
 }
 
+/* ============================================================
+   rank-mode toggle · "by pen game" / "by streams"
+   ============================================================ */
+.mode-toggle {
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  margin-bottom: 20px;
+}
+.mode-tab {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.mode-tab + .mode-tab { border-left: 1px solid var(--ink); }
+.mode-tab.is-active { background: var(--ink); color: var(--paper); }
+.mode-tab:not(.is-active):hover { background: var(--paper-deep); }
+
+/* ============================================================
+   stamps · overlay tags on cards · OG · RIP · MAINSTREAM · GULLY · PEN
+   ============================================================ */
+.stamp {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 6px;
+  border: 1.5px solid currentColor;
+  background: rgba(244, 239, 230, 0.92);
+  transform: rotate(-7deg);
+  pointer-events: none;
+  z-index: 2;
+  white-space: nowrap;
+}
+.stamp.is-tl { top: 8px; left: 8px; }
+.stamp.is-tr { top: 8px; right: 8px; }
+.stamp.is-bl { bottom: 8px; left: 8px; }
+.stamp.is-br { bottom: 8px; right: 8px; }
+.stamp--og { color: var(--burn-deep); border-color: var(--burn-deep); transform: rotate(-9deg); }
+.stamp--rip { color: var(--ink); border-color: var(--ink); background: var(--ink); color: var(--paper); transform: rotate(4deg); }
+.stamp--mainstream { color: var(--mute); border-color: var(--mute); transform: rotate(-4deg); }
+.stamp--gully { color: var(--mumbai); border-color: var(--mumbai); }
+.stamp--pen { color: var(--burn); border-color: var(--burn); }
+.stamp--rip-pantheon { background: var(--ink); color: var(--burn); border-color: var(--burn); }
+
+/* artist cards become canvas for stamps */
+.card { position: relative; }
+.lb-row { position: relative; }
+
+/* keep old is-og-mainstream working but flesh it out with a proper stamp */
+.card.is-og-mainstream::after {
+  content: "OG · MAINSTREAM";
+  position: absolute;
+  top: 8px; right: 8px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.10em;
+  color: var(--mute);
+  background: rgba(244, 239, 230, 0.92);
+  padding: 3px 6px;
+  border: 1px solid var(--mute);
+  transform: rotate(-4deg);
+}
+
+/* ============================================================
+   halftone-photo treatment · for AOTD + city hero (toggle via class)
+   ============================================================ */
+.is-halftone img {
+  filter: contrast(1.18) saturate(0.85);
+}
+.is-halftone {
+  background-blend-mode: multiply;
+  position: relative;
+}
+.is-halftone::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at center, var(--ink) 0.6px, transparent 1px);
+  background-size: 4px 4px;
+  mix-blend-mode: screen;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* ============================================================
+   bigger Devanagari · push the regional-script presence
+   ============================================================ */
+.hero__deva {
+  font-size: clamp(180px, 32vw, 480px);
+  opacity: 0.06;
+}
+.section__title .deva-sub {
+  display: block;
+  font-family: var(--font-deva);
+  font-size: 0.42em;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+  color: var(--ink);
+  opacity: 0.55;
+  text-transform: none;
+  line-height: 1;
+  margin-top: 4px;
+}
+
+/* ============================================================
+   share-card modal · the PNG-rendering canvas overlay
+   ============================================================ */
+.share-modal {
+  position: fixed; inset: 0;
+  background: rgba(27, 27, 27, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+.share-modal.is-open { display: flex; }
+.share-modal__inner {
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  padding: 24px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.share-modal__head {
+  display: flex; align-items: baseline; justify-content: space-between;
+}
+.share-modal__title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.share-modal__close {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--mute);
+  cursor: pointer;
+  border: 0;
+  background: none;
+}
+.share-modal__canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+}
+.share-modal__actions {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+
+/* ============================================================
+   tier list export · bigger blocks · share-friendly
+   ============================================================ */
+.tier-row {
+  min-height: 130px;
+  grid-template-columns: 110px 1fr;
+}
+.tier-row__letter {
+  font-size: 76px;
+}
+.tier-row[data-tier="S"] .tier-row__letter,
+.tier-row[data-tier="A"] .tier-row__letter,
+.tier-row[data-tier="B"] .tier-row__letter,
+.tier-row[data-tier="C"] .tier-row__letter,
+.tier-row[data-tier="D"] .tier-row__letter {
+  letter-spacing: -0.04em;
+  font-weight: 400;
+}
+.tier-mini {
+  width: 84px; height: 84px;
+}
+.tier-mini__label {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+
 /* responsive --------------------------------------------- */
 @media (max-width: 880px) {
   .builder { grid-template-columns: 1fr; }

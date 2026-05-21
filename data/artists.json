@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "version": "v1.6",
+    "version": "v1.7",
     "compiled_at": "2026-05-20",
     "total_artists": 85,
     "source": "research/artist-roster-v1.md",
@@ -25,7 +25,9 @@
       "diljit-dosanjh",
       "raja-kumari"
     ],
-    "images_fetched_at": "2026-05-21"
+    "images_fetched_at": "2026-05-21",
+    "retiered_at": "2026-05-21",
+    "respect_tier_principle": "Hardcore-DHH-fan reverence tier. S = pantheon (pen game / OG cred / underground integrity). is_crossover=1 = Bollywood-pop or radio-rap that hardcore heads side-eye; these get buried from default rankings but still surface via search and the \"by streams\" toggle."
   },
   "artists": [
     {
@@ -60,7 +62,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Baba_Sehgal",
       "instagram_handle": "@babasehgal",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e021d5e5118400187e7421295d0",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "D",
+      "is_crossover": 1
     },
     {
       "slug": "bohemia",
@@ -93,7 +97,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Bohemia_(rapper)",
       "instagram_handle": "@itsbohemia",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174786da5860b52e5395a3403e2",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "yo-yo-honey-singh",
@@ -128,7 +134,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Yo_Yo_Honey_Singh",
       "instagram_handle": "@yoyohoneysingh",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174bc7e4fffd515b47ff1ebbc1f",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "D",
+      "is_crossover": 1
     },
     {
       "slug": "raftaar",
@@ -163,7 +171,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Raftaar",
       "instagram_handle": "@raftaarmusic",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174715b4d3baa72278cf77b1c15",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "ikka",
@@ -197,7 +207,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Ikka_Singh",
       "instagram_handle": "@iamikka",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174b2dc3a8ce9bf77b9c5363b67",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "badshah",
@@ -231,7 +243,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Badshah_(rapper)",
       "instagram_handle": "@badboyshah",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab67616100005174918acc38f2c56aaab17a8610",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "D",
+      "is_crossover": 1
     },
     {
       "slug": "divine",
@@ -267,7 +281,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Divine_(rapper)",
       "instagram_handle": "@viviandivine",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174e4bae1cd1803402a906b61ba",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "S",
+      "is_crossover": 0
     },
     {
       "slug": "naezy",
@@ -301,7 +317,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Naezy",
       "instagram_handle": "@naezythebaa",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab6761610000517499646c3d0d9d0ebd1c886ba4",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "S",
+      "is_crossover": 0
     },
     {
       "slug": "emiway-bantai",
@@ -336,7 +354,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Emiway_Bantai",
       "instagram_handle": "@emiwaybantai",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051744602fb90e97c2c97dddfed17",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "mc-stan",
@@ -371,7 +391,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/MC_Stan",
       "instagram_handle": "@m___c___stan",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab676161000051749ca75451597097c6e53b75f7",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "mc-altaf",
@@ -405,7 +427,9 @@
       "instagram_handle": "@mcaltaf__",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab676161000051741912c4e39f08845200ad8f7a",
       "is_votable": 1,
-      "disambiguation": "Different person from MC Stan (Altaf Tadavi, Pune). Both real names happen to be 'Altaf Shaikh' — do NOT collapse."
+      "disambiguation": "Different person from MC Stan (Altaf Tadavi, Pune). Both real names happen to be 'Altaf Shaikh' — do NOT collapse.",
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "shah-rule",
@@ -438,7 +462,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@shahrule",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174b22f1a45878953bc892545e8",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "devil",
@@ -470,7 +496,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@_devilrock",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174c9b9d2cf2cb2825cb5e788c3",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "aavrutti",
@@ -503,7 +531,9 @@
       "instagram_handle": "@aavrutti",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e023e1db4bc705983ba346dc4fb",
       "is_votable": 1,
-      "is_collective": 1
+      "is_collective": 1,
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "7-bantaiz",
@@ -537,7 +567,9 @@
       "instagram_handle": "@7bantaiz",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174f34aae7d67662916d2773ae2",
       "is_votable": 1,
-      "is_collective": 1
+      "is_collective": 1,
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "dopeadelicz",
@@ -572,7 +604,9 @@
       "instagram_handle": "@dopeadelicz",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174ee87e3c523f08d16b75fd813",
       "is_votable": 1,
-      "note": "Stony Psyko has a solo Spotify page too — captured as _solo fields. Dopeadelicz (collective) is the canonical."
+      "note": "Stony Psyko has a solo Spotify page too — captured as _solo fields. Dopeadelicz (collective) is the canonical.",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "tienas",
@@ -605,7 +639,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@tienasmusic",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab6761610000517480fa928b04f3313fe6af7608",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "yashraj",
@@ -640,7 +676,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Yashraj",
       "instagram_handle": "@yashraj.x",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab6761610000517407f37145bdf162fd501ad180",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "S",
+      "is_crossover": 0
     },
     {
       "slug": "the-siege",
@@ -676,7 +714,9 @@
       "instagram_handle": "@therealsiege",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174a3d18d8834b89daa6fd12b9b",
       "is_votable": 1,
-      "note": "Mira Road, Mumbai. Middle-class perspective, contrasted with Dharavi gully aesthetic."
+      "note": "Mira Road, Mumbai. Middle-class perspective, contrasted with Dharavi gully aesthetic.",
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "shez",
@@ -707,7 +747,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@shez.exe",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174c22a7eb41182f09e1f438f84",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "krsna",
@@ -742,7 +784,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/KRSNA_(rapper)",
       "instagram_handle": "@krsnamusic",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab6761610000517433a750f4e8264286af8e751a",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "S",
+      "is_crossover": 0
     },
     {
       "slug": "seedhe-maut",
@@ -780,7 +824,9 @@
       "instagram_handle": "@seedhe_maut",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174dbfd70ecee8d42dfd5fbb29d",
       "is_votable": 1,
-      "is_duo": 1
+      "is_duo": 1,
+      "respect_tier": "S",
+      "is_crossover": 0
     },
     {
       "slug": "prabh-deep",
@@ -815,7 +861,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Prabh_Deep",
       "instagram_handle": "@prabhdeep",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174b766c003524f517d7e482ce3",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "S",
+      "is_crossover": 0
     },
     {
       "slug": "king",
@@ -849,7 +897,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/King_(singer)",
       "instagram_handle": "@iamkingofficial",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174bacb22c5856985832ced689e",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "D",
+      "is_crossover": 1
     },
     {
       "slug": "raga",
@@ -882,7 +932,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@ragathelekhak",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab6761610000517463475f1cf4f2f16eedf02457",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "lil-golu",
@@ -914,7 +966,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@lilgolu",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051746460947793b2c9c840a8eaa4",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "C",
+      "is_crossover": 0
     },
     {
       "slug": "muhfaad",
@@ -946,7 +1000,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@muhfaad",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab6761610000517438e0c6b8544342bd41ae9b5c",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "fotty-seven",
@@ -979,7 +1035,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@fottyseven",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174bf027d388a40d87bc5a69ea7",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "dino-james",
@@ -1013,7 +1071,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@dinojamesofficial",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174e889fd02704c7b2ddbb499ca",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "karma",
@@ -1046,7 +1106,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@karmathelekhak",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab67616100005174ec5399c902437e0594d8ab07",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "dakait",
@@ -1076,7 +1138,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@dakait.evo",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab6761610000517442d0b5d73401ae8da27cf1c4",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "chaar-diwaari",
@@ -1109,7 +1173,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@chaardiwaari",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051747893d3d72cd3b06791652580",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "sidhu-moose-wala",
@@ -1145,7 +1211,9 @@
       "instagram_handle": "@sidhu_moosewala",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051749973157bdaedef3f77ef8e13",
       "is_votable": 1,
-      "rip_date": "2022-05-29"
+      "rip_date": "2022-05-29",
+      "respect_tier": "B",
+      "is_crossover": 1
     },
     {
       "slug": "karan-aujla",
@@ -1180,7 +1248,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Karan_Aujla",
       "instagram_handle": "@karanaujla_official",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051748a4c60d0eebe893f72e42979",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 1
     },
     {
       "slug": "ap-dhillon",
@@ -1215,7 +1285,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/AP_Dhillon",
       "instagram_handle": "@ap.dhillxn",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174fb505b37709fa86cfd8f55b3",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "C",
+      "is_crossover": 1
     },
     {
       "slug": "shubh",
@@ -1249,7 +1321,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Shubh",
       "instagram_handle": "@shubh",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab676161000051749dfbd284ba8a7d4876a181e3",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "C",
+      "is_crossover": 1
     },
     {
       "slug": "diljit-dosanjh",
@@ -1284,7 +1358,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Diljit_Dosanjh",
       "instagram_handle": "@diljitdosanjh",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab67616100005174fc043bea91ac91c222d235c9",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "C",
+      "is_crossover": 1
     },
     {
       "slug": "sunny-malton",
@@ -1316,7 +1392,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Sunny_Malton",
       "instagram_handle": "@sunnymalton",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab6761610000517436b18d0042c9f3e0182a2cab",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "C",
+      "is_crossover": 1
     },
     {
       "slug": "channi-nattan",
@@ -1346,7 +1424,9 @@
       "instagram_handle": "@channinattan",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174da2a395d2d6bac980a040938",
       "is_votable": 1,
-      "note": "Spotify RADAR artist."
+      "note": "Spotify RADAR artist.",
+      "respect_tier": "C",
+      "is_crossover": 1
     },
     {
       "slug": "gurinder-gill",
@@ -1377,7 +1457,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Gurinder_Gill",
       "instagram_handle": "@gurindergillmusic",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051747174bab444b3d4fb9926ffd9",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "C",
+      "is_crossover": 1
     },
     {
       "slug": "jassa-dhillon",
@@ -1409,7 +1491,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Jassa_Dhillon",
       "instagram_handle": "@jassadhillonofficial",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051740bded228a4977e528644176f",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 1
     },
     {
       "slug": "wazir-patar",
@@ -1441,7 +1525,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@wazirpatar",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174f2b262bb769612d710bb08f9",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "big-boi-deep",
@@ -1470,7 +1556,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@bigboideep",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174b8108ee592910ac2eea6b6f2",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "sikander-kahlon",
@@ -1504,7 +1592,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@skndrkalo",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab6761610000517446ad55460f688661b0e4dc9f",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "raf-saperra",
@@ -1535,7 +1625,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@rafsaperra",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174010ad51b45434aa0e718f036",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "C",
+      "is_crossover": 0
     },
     {
       "slug": "tegi-pannu",
@@ -1565,7 +1657,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@tegipannu",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174f5769d19406c129007768f0d",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "C",
+      "is_crossover": 0
     },
     {
       "slug": "hanumankind",
@@ -1599,7 +1693,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Hanumankind",
       "instagram_handle": "@hanumankind",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174d5a94f1d05a422f1057b0e90",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "S",
+      "is_crossover": 0
     },
     {
       "slug": "talwiinder",
@@ -1632,7 +1728,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Talwiinder",
       "instagram_handle": "@talwiinder",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174deee9abf607a1dd10f28756e",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 1
     },
     {
       "slug": "tsumyoki",
@@ -1666,7 +1764,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Tsumyoki",
       "instagram_handle": "@tsumyoki",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174d01a8d1732883932b10f6c5c",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "frappe-ash",
@@ -1697,7 +1797,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@frappeash",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab6761610000517454b23a49ec5e725b3f3b607c",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "yungsta",
@@ -1727,7 +1829,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@yungstaa",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab6761610000517462d1c658d239db4ac98358bc",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "mc-square",
@@ -1760,7 +1864,9 @@
       "instagram_handle": "@officialmcsquare",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051748b10f586de6c953e7959f197",
       "is_votable": 1,
-      "note": "MTV Hustle 2.0 winner"
+      "note": "MTV Hustle 2.0 winner",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "vijay-dk",
@@ -1791,7 +1897,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@vijaydk4three",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051743db26edbc9160212293a5428",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "kayan",
@@ -1824,7 +1932,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@kayan.a",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051743915bd9db4a4e48cc245ab0d",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "reble",
@@ -1858,7 +1968,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@reblellr",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab67616100005174f43b173d37b8cc00df37e804",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "naam-sujal",
@@ -1890,7 +2002,9 @@
       "instagram_handle": "@naamsujal",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab67616100005174326c69a7ef762a2b597e3862",
       "is_votable": 1,
-      "note": "MTV Hustle 4 runner-up. City still unverified."
+      "note": "MTV Hustle 4 runner-up. City still unverified.",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "arpit-bala",
@@ -1923,7 +2037,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@arpitbala_",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174f37e3036f0b56288385243a5",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 1
     },
     {
       "slug": "young-galib",
@@ -1955,7 +2071,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@young.galib",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab6761610000517431e15380eaa9fac8d8b6f4a6",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "dhanji",
@@ -1990,7 +2108,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@dhanji_official",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174798042a623da483868ccbc9d",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "hiphop-tamizha",
@@ -2023,7 +2143,9 @@
       "instagram_handle": "@hiphoptamizha",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab6761610000517467a9c256bee82482d82f2716",
       "is_votable": 1,
-      "is_duo": 1
+      "is_duo": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "paal-dabba",
@@ -2057,7 +2179,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Paal_Dabba",
       "instagram_handle": "@paaldabba",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab6761610000517448df0baf6ed29c59fae5b65c",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "brodha-v",
@@ -2092,7 +2216,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Brodha_V",
       "instagram_handle": "@brodha_v",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051749df36f6d4c98009006318918",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "smokey-the-ghost",
@@ -2124,7 +2250,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@smokeytheghost",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab676161000051749a76b0459e35fe6347014641",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "rapper-big-deal",
@@ -2158,7 +2286,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@rapperbigdeal",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051742b685cba7e1855b4ad68179a",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "ahmer",
@@ -2193,7 +2323,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@ahmer__music",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab67616100005174074160f2e4a3ed4c35d68ca9",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "borkung-hrangkhawl",
@@ -2227,7 +2359,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Borkung_Hrangkhawl",
       "instagram_handle": "@borkungh",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02aea55f3b49647f2cd99e62b8",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "khasi-bloodz",
@@ -2262,7 +2396,9 @@
       "instagram_handle": "@officialkhasibloodz",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051742587d95fa27866b6ed6c7ddd",
       "is_votable": 1,
-      "is_collective": 1
+      "is_collective": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "meba-ofilia",
@@ -2294,7 +2430,9 @@
       "instagram_handle": "@mebaofilia",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174b3cea6adddec0e711539fae5",
       "is_votable": 1,
-      "note": "MTV EMA Best India Act 2018"
+      "note": "MTV EMA Best India Act 2018",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "k4-kekho",
@@ -2326,7 +2464,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@k4kekho",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174ca8cc9fe77290e809264ef72",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "moko-koza",
@@ -2361,7 +2501,9 @@
       "instagram_handle": "@mokokoza",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174b496cbb4499e5508676bb91b",
       "is_votable": 1,
-      "note": "Chakhesang Naga. Pioneer of folk-fusion Nagamese rap."
+      "note": "Chakhesang Naga. Pioneer of folk-fusion Nagamese rap.",
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "yelhomie",
@@ -2397,7 +2539,9 @@
       "instagram_handle": "@yelhomie",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051741e0866729cb6cffd0c49770c",
       "is_votable": 1,
-      "note": "Manipur's sharpest conscience. Signed to Mass Appeal India in 2024."
+      "note": "Manipur's sharpest conscience. Signed to Mass Appeal India in 2024.",
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "kim-the-beloved",
@@ -2431,7 +2575,9 @@
       "instagram_handle": "@kimthebeloved",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174e16aa75ed9e34e7f70f1021e",
       "is_votable": 1,
-      "note": "Roots between Shillong and Aizawl. Frequent Reble collaborator."
+      "note": "Roots between Shillong and Aizawl. Frequent Reble collaborator.",
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "gnie",
@@ -2466,7 +2612,9 @@
       "instagram_handle": "@geezyfanai87",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174b18cbb3a52b6281c429f7bec",
       "is_votable": 1,
-      "note": "Veteran of Mizo hip-hop. Collaborated with Big Deal on the anti-racism anthem 'I'm A Chinkey'."
+      "note": "Veteran of Mizo hip-hop. Collaborated with Big Deal on the anti-racism anthem 'I'm A Chinkey'.",
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "jelo",
@@ -2500,7 +2648,9 @@
       "instagram_handle": "@melolikejelo",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab67616100005174edbabc31406e69b884473d45",
       "is_votable": 1,
-      "note": "Dirty-south influenced Mizo rapper. First Mizo signing to Azadi Records (2022)."
+      "note": "Dirty-south influenced Mizo rapper. First Mizo signing to Azadi Records (2022).",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "minimi",
@@ -2535,7 +2685,9 @@
       "instagram_handle": "@oprotirodhyo",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051741e6255cf598a2354cb91fc75",
       "is_votable": 1,
-      "note": "Pioneer of Assamese rap. ~215K monthly listeners — biggest pure NE rapper after Reble."
+      "note": "Pioneer of Assamese rap. ~215K monthly listeners — biggest pure NE rapper after Reble.",
+      "respect_tier": "A",
+      "is_crossover": 0
     },
     {
       "slug": "unb",
@@ -2571,7 +2723,9 @@
       "instagram_handle": "@unb_official",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051748d9acdca486a7235ee854643",
       "is_votable": 1,
-      "note": "MTV Hustle 2.0 finalist. Sikkim's biggest rap voice. Founder of Kauso Records."
+      "note": "MTV Hustle 2.0 finalist. Sikkim's biggest rap voice. Founder of Kauso Records.",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "moksh-meghalaya",
@@ -2606,7 +2760,9 @@
       "instagram_handle": "@mokshmusic",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab6761610000517460f47307376f350c88dad022",
       "is_votable": 1,
-      "note": "Co-anchor of Anthem For The Northeast (2016)."
+      "note": "Co-anchor of Anthem For The Northeast (2016).",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "kabir-shillong",
@@ -2637,7 +2793,9 @@
       "wikipedia_url": null,
       "instagram_handle": "@kabir12",
       "is_votable": 1,
-      "note": "Bengali-Jaintia origin. Co-led the Northeast Cypher 2020 initiative."
+      "note": "Bengali-Jaintia origin. Co-led the Northeast Cypher 2020 initiative.",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "sikdar",
@@ -2672,7 +2830,9 @@
       "instagram_handle": null,
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02abc7a3b40968f3cb93148fd1",
       "is_votable": 1,
-      "note": "Assam rep on Northeast Cypher 2020. Instagram handle unverified."
+      "note": "Assam rep on Northeast Cypher 2020. Instagram handle unverified.",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "macnivil",
@@ -2706,7 +2866,9 @@
       "instagram_handle": "@macnivil",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051745870003ce2b43b48e7bdcc0b",
       "is_votable": 1,
-      "note": "Pioneer of Nagamese hip-hop. 'Ura Uvie' (2019) was the first full-length Nagamese rap album."
+      "note": "Pioneer of Nagamese hip-hop. 'Ura Uvie' (2019) was the first full-length Nagamese rap album.",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "freakyy",
@@ -2741,7 +2903,9 @@
       "instagram_handle": null,
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174ab935a6cc824ee43e9b51eb7",
       "is_votable": 1,
-      "note": "Second Tripura voice after Borkung. Instagram handle unverified."
+      "note": "Second Tripura voice after Borkung. Instagram handle unverified.",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "don-kam",
@@ -2775,7 +2939,9 @@
       "instagram_handle": "@kamsang19",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab67616100005174d99e45c6c8d470a26055591e",
       "is_votable": 1,
-      "note": "Pioneer of Arunachal hip-hop. Founder of Demons Clique Music."
+      "note": "Pioneer of Arunachal hip-hop. Founder of Demons Clique Music.",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "sambata",
@@ -2806,7 +2972,9 @@
       "instagram_handle": "@sambata",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174459bae1eb58e4f1125615691",
       "is_votable": 1,
-      "note": "Possible match for user-mentioned 'Samand' — unconfirmed. ~926K Spotify monthly listeners (Apr 2026 snapshot)."
+      "note": "Possible match for user-mentioned 'Samand' — unconfirmed. ~926K Spotify monthly listeners (Apr 2026 snapshot).",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "samad-khan",
@@ -2841,7 +3009,9 @@
       "instagram_handle": "@samadkhannn",
       "image_url": "https://image-cdn-ak.spotifycdn.com/image/ab6761610000517436372a3c8106f80a68a99b20",
       "is_votable": 1,
-      "note": "User-named favorite (originally spelled 'Sammad'). Spotify Radar India alum. Melodic Urdu-tinged rap, signed to Universal."
+      "note": "User-named favorite (originally spelled 'Sammad'). Spotify Radar India alum. Melodic Urdu-tinged rap, signed to Universal.",
+      "respect_tier": "B",
+      "is_crossover": 0
     },
     {
       "slug": "raja-kumari",
@@ -2876,7 +3046,9 @@
       "wikipedia_url": "https://en.wikipedia.org/wiki/Raja_Kumari",
       "instagram_handle": "@therajakumari",
       "image_url": "https://image-cdn-fa.spotifycdn.com/image/ab67616100005174727df9daec6c6e9566696ab2",
-      "is_votable": 1
+      "is_votable": 1,
+      "respect_tier": "B",
+      "is_crossover": 0
     }
   ]
 }

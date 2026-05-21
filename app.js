@@ -38,24 +38,37 @@
     return ARTISTS;
   }
 
-  /* deterministic mock vote count · seeded by tier + slug
-     gives a stable, plausible % share across renders without a backend.
-     replace with real counts once /api/leaderboard is wired. */
+  /* ranking · respect_tier (hardcore DHH cred) is the DEFAULT.
+     popularity_tier (commercial reach) is the alt mode users can opt into via the toggle.
+     deterministic seeded votes either way so renders are stable. */
   function tierWeight(t) { return { S: 50000, A: 18000, B: 5000, C: 1200, D: 250 }[t] || 100; }
   function hashStr(s) {
     let h = 2166136261;
     for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
     return (h >>> 0);
   }
+  function rankMode() { return localStorage.getItem('rep:rankMode') || 'respect'; }
+  function setRankMode(m) { localStorage.setItem('rep:rankMode', m); }
   function mockVotes(a) {
-    const base = tierWeight(a.popularity_tier);
-    const wobble = (hashStr(a.slug) % 1000) / 1000;
-    return Math.round(base * (0.55 + wobble * 0.9));
+    const mode = rankMode();
+    const tier = mode === 'streams' ? a.popularity_tier : (a.respect_tier || a.popularity_tier);
+    const base = tierWeight(tier);
+    const wobble = (hashStr(a.slug + mode) % 1000) / 1000;
+    let v = Math.round(base * (0.55 + wobble * 0.9));
+    // in respect mode, crossovers get DEEPLY buried · multiplier 0.05
+    if (mode === 'respect' && a.is_crossover) v = Math.round(v * 0.05);
+    return v;
   }
   function totalVotes(artists) {
     return artists.reduce((s, a) => s + mockVotes(a), 0);
   }
   function pctOf(a, total) { return (mockVotes(a) / total) * 100; }
+  // default pool excludes crossovers in respect mode
+  function defaultPool(artists) {
+    return rankMode() === 'respect'
+      ? artists.filter(a => !a.is_crossover)
+      : artists;
+  }
 
   function initials(name) {
     return name.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -81,20 +94,33 @@
     return `<span class="fallback">${esc(initials(a.stage_name))}</span>`;
   }
 
+  function stampFor(a) {
+    if (a.active_status === 'RIP') return { cls: 'stamp--rip', text: 'R.I.P.' };
+    if (a.is_crossover) return { cls: 'stamp--mainstream', text: 'mainstream' };
+    if (a.respect_tier === 'S') return { cls: 'stamp--pen', text: 'pen game' };
+    if (a.subgenre === 'Gully Rap') return { cls: 'stamp--gully', text: 'gully' };
+    if (a.era === 'OG') return { cls: 'stamp--og', text: 'OG' };
+    return null;
+  }
+
   function cardHtml(a, opts = {}) {
     const picked = opts.pickedSet && opts.pickedSet.has(a.slug);
-    const ogm = isOgMainstream(a) ? 'is-og-mainstream' : '';
     const link = opts.link ? `<a href="/artist.html?slug=${esc(a.slug)}" style="display:block">` : '';
     const linkEnd = opts.link ? `</a>` : '';
+    const stamp = stampFor(a);
+    const stampHtml = stamp ? `<span class="stamp is-tr ${stamp.cls}">${esc(stamp.text)}</span>` : '';
+    // tier shown is respect tier when in respect mode, else popularity tier
+    const displayTier = rankMode() === 'respect' ? (a.respect_tier || a.popularity_tier) : a.popularity_tier;
     return `
-      <article class="card ${picked ? 'is-picked' : ''} ${ogm}"
+      <article class="card ${picked ? 'is-picked' : ''}"
                draggable="${opts.draggable !== false}" data-slug="${esc(a.slug)}">
         ${link}
+        ${stampHtml}
         <div class="card__photo">${photoHtml(a)}</div>
         <div class="card__name">${esc(a.stage_name)}</div>
         <div class="card__meta">
           <span>${esc(lower(a.city_represented))}</span>
-          <span class="card__tier">${esc(a.popularity_tier)}</span>
+          <span class="card__tier">${esc(displayTier)}</span>
         </div>
         ${linkEnd}
       </article>`;
@@ -226,13 +252,13 @@
   async function initLanding() {
     await loadArtists();
 
-    // top 5 seeded slugs (most credible right now)
-    const top5slugs = ['karan-aujla', 'hanumankind', 'divine', 'seedhe-maut', 'sidhu-moose-wala'];
-    const total = totalVotes(ARTISTS);
+    // top 5 · computed from current rank mode (respect by default, crossovers buried)
+    const pool = defaultPool(ARTISTS);
+    const total = totalVotes(pool);
+    const top5 = [...pool].sort((a, b) => mockVotes(b) - mockVotes(a)).slice(0, 5);
     const tickets = $('#tickets');
     if (tickets) {
-      tickets.innerHTML = top5slugs.map((slug, i) => {
-        const a = BY_SLUG[slug]; if (!a) return '';
+      tickets.innerHTML = top5.map((a, i) => {
         const pct = pctOf(a, total).toFixed(1);
         return `
           <li class="ticket ticket-with-photo">
@@ -244,14 +270,27 @@
               </a>
               <span class="ticket__city">${esc(lower(a.city_represented))}${a.active_status === 'RIP' ? ' · r.i.p.' : ''}</span>
             </span>
-            <span class="ticket__stat"><span class="pct">${pct}%</span>of top-5 picks</span>
+            <span class="ticket__stat"><span class="pct">${pct}%</span>${rankMode() === 'respect' ? 'pen-game share' : 'streams share'}</span>
           </li>`;
       }).join('');
     }
+    // rank-mode toggle on landing
+    const modeToggle = $('#rankToggle');
+    if (modeToggle) {
+      modeToggle.innerHTML = `
+        <button class="mode-tab ${rankMode() === 'respect' ? 'is-active' : ''}" data-mode="respect">by pen game</button>
+        <button class="mode-tab ${rankMode() === 'streams' ? 'is-active' : ''}" data-mode="streams">by streams</button>`;
+      $$('.mode-tab', modeToggle).forEach(btn => {
+        btn.addEventListener('click', () => {
+          setRankMode(btn.dataset.mode);
+          location.reload();
+        });
+      });
+    }
 
-    // artist of the day · cassette tape aesthetic · rotates by date · biased S/A/B tier
+    // artist of the day · biased toward hardcore S/A/B respect tier, excludes crossovers
     const aotdSeed = Math.floor(Date.now() / 86400000);
-    const spotlightPool = ARTISTS.filter(a => ['S','A','B'].includes(a.popularity_tier));
+    const spotlightPool = ARTISTS.filter(a => !a.is_crossover && ['S','A','B'].includes(a.respect_tier || ''));
     const aotd = spotlightPool[aotdSeed % spotlightPool.length];
     const aotdEl = $('#artistOfDay');
     if (aotdEl && aotd) {
@@ -285,10 +324,10 @@
         </div>`;
     }
 
-    // hero marquee · scrolling photos of all 85 (well, top 40 by tier)
+    // hero marquee · scrolling photos respecting current rank mode
     const marqueeWrap = $('#marquee');
     if (marqueeWrap) {
-      const top40 = [...ARTISTS].sort((a, b) => mockVotes(b) - mockVotes(a)).slice(0, 40);
+      const top40 = [...defaultPool(ARTISTS)].sort((a, b) => mockVotes(b) - mockVotes(a)).slice(0, 40);
       // double it so the loop is seamless
       const doubled = top40.concat(top40);
       marqueeWrap.innerHTML = `
@@ -335,13 +374,14 @@
       }
     } catch {}
 
-    // daily 1v1 · use real photos · seeded by date
+    // daily 1v1 · hardcore matchups, no crossovers in the rotation
     const duelSeed = Math.floor(Date.now() / 86400000);
-    const cityVar = duelSeed % 3;
+    const cityVar = duelSeed % 4;
     const pairs = [
-      ['hanumankind', 'mc-stan', 'south meets west · trap kings'],
-      ['krsna', 'emiway-bantai', 'delhi pen vs mumbai hustle'],
-      ['divine', 'sidhu-moose-wala', 'gully OG vs the punjabi king']
+      ['krsna', 'seedhe-maut', 'delhi pen game · solo vs duo'],
+      ['hanumankind', 'mc-altaf', 'global trap vs dharavi street'],
+      ['yashraj', 'the-siege', 'mumbai new wave · two pens'],
+      ['divine', 'naezy', 'the gully wave · founder vs cult OG']
     ];
     const p = pairs[cityVar];
     const aa = BY_SLUG[p[0]], bb = BY_SLUG[p[1]];
@@ -535,7 +575,7 @@
       state.handle = v;
     });
 
-    $('#lockBtn').addEventListener('click', () => {
+    $('#lockBtn').addEventListener('click', async () => {
       if (state.slots.filter(Boolean).length < 5) return;
       const payload = {
         picks: state.slots.map(a => a.slug),
@@ -544,13 +584,22 @@
         created_at: Date.now()
       };
       localStorage.setItem('rep:last_top5', JSON.stringify(payload));
-      const picks = payload.picks.map(slug => BY_SLUG[slug]);
-      const handleStr = payload.handle ? '@' + payload.handle : '@anonymous';
-      const lines = picks.map((a, i) => `${String(i+1).padStart(2,'0')}. ${a.stage_name.toUpperCase()}  ·  ${lower(a.city_represented)}`);
-      const message = `${handleStr}'s DHH TOP 5\n\n${lines.join('\n')}${payload.defense ? `\n\n— "${payload.defense}"` : ''}\n\nrep.anirudhgoel.xyz`;
-      navigator.clipboard.writeText(message).then(() => {
-        alert('locked in.\n\ncopied to clipboard. paste anywhere.\n\nshareable PNG card pipeline ships next.\n\n' + message);
-      }).catch(() => alert('locked in.\n\n' + message));
+
+      // build the share card PNG
+      const btn = $('#lockBtn');
+      const orig = btn.textContent;
+      btn.disabled = true; btn.textContent = 'rendering your card…';
+      try {
+        const picks = state.slots;
+        const canvas = await buildShareCard({ picks, defense: state.defense, handle: state.handle });
+        const filename = `rep-top5-${(state.handle || 'anon')}.png`;
+        showShareModal('your DHH top 5', canvas, filename);
+      } catch (e) {
+        console.error(e);
+        alert('PNG render hit an error. try refreshing.');
+      } finally {
+        btn.disabled = false; btn.textContent = orig;
+      }
     });
   }
 
@@ -821,16 +870,25 @@
         </div>`;
     }
 
-    $('#tierExport').addEventListener('click', () => {
+    $('#tierExport').addEventListener('click', async () => {
       const payload = { tiers: state.tiers, created_at: Date.now() };
       localStorage.setItem('rep:last_tier', JSON.stringify(payload));
-      const lines = ['S','A','B','C','D'].map(t =>
-        `${t}: ${state.tiers[t].map(s => BY_SLUG[s]?.stage_name).filter(Boolean).join(', ') || '—'}`
-      );
-      const msg = `MY DHH TIER LIST\n\n${lines.join('\n')}\n\nrep.anirudhgoel.xyz/tier.html`;
-      navigator.clipboard.writeText(msg).then(() => {
-        alert('tier list copied to clipboard.\n\nPNG export ships with the share-card pipeline.\n\n' + msg);
-      }).catch(() => alert(msg));
+      const btn = $('#tierExport');
+      const orig = btn.textContent;
+      btn.disabled = true; btn.textContent = 'rendering tier card…';
+      try {
+        // pull saved handle from last top-5 if present, else anon
+        let handle = '';
+        try { handle = JSON.parse(localStorage.getItem('rep:last_top5') || '{}').handle || ''; } catch {}
+        const canvas = await buildTierCard({ tiers: state.tiers, handle });
+        const filename = `rep-tier-${(handle || 'anon')}.png`;
+        showShareModal('your DHH tier list', canvas, filename);
+      } catch (e) {
+        console.error(e);
+        alert('PNG render hit an error. try refreshing.');
+      } finally {
+        btn.disabled = false; btn.textContent = orig;
+      }
     });
 
     $('#tierReset').addEventListener('click', () => {
@@ -846,9 +904,24 @@
      ============================================================ */
   async function initLeaderboard() {
     await loadArtists();
-    const total = totalVotes(ARTISTS);
-    const sorted = [...ARTISTS].sort((x, y) => mockVotes(y) - mockVotes(x));
-    $('#lbTotal').textContent = total.toLocaleString('en-IN') + ' simulated votes';
+    const mode = rankMode();
+    // basePool · respects rank mode (default = no crossovers)
+    const basePool = mode === 'streams' ? ARTISTS : ARTISTS.filter(a => !a.is_crossover);
+    const total = totalVotes(basePool);
+    const sorted = [...basePool].sort((x, y) => mockVotes(y) - mockVotes(x));
+    $('#lbTotal').textContent = `${total.toLocaleString('en-IN')} simulated votes · ranked by ${mode === 'respect' ? 'pen game' : 'streams'}`;
+
+    // top-level mode toggle
+    const modeToggle = $('#lbModeToggle');
+    if (modeToggle) {
+      modeToggle.innerHTML = `
+        <button class="mode-tab ${mode === 'respect' ? 'is-active' : ''}" data-mode="respect">by pen game</button>
+        <button class="mode-tab ${mode === 'streams' ? 'is-active' : ''}" data-mode="streams">by streams</button>`;
+      $$('.mode-tab', modeToggle).forEach(btn => btn.addEventListener('click', () => {
+        setRankMode(btn.dataset.mode);
+        location.reload();
+      }));
+    }
 
     const state = { scope: 'all', list: sorted };
     render();
@@ -863,10 +936,11 @@
     });
 
     function applyScope() {
-      let pool = ARTISTS;
+      let pool = basePool;
       if (state.scope.startsWith('era:')) pool = pool.filter(a => a.era === state.scope.slice(4));
       else if (state.scope.startsWith('sub:')) pool = pool.filter(a => a.subgenre === state.scope.slice(4));
-      else if (state.scope === 'underrated') pool = pool.filter(a => a.popularity_tier === 'C' || a.popularity_tier === 'D');
+      else if (state.scope === 'underrated') pool = ARTISTS.filter(a => (a.respect_tier === 'C' || a.respect_tier === 'D') && !a.is_crossover);
+      else if (state.scope === 'crossovers') pool = ARTISTS.filter(a => a.is_crossover);
       state.list = [...pool].sort((x, y) => mockVotes(y) - mockVotes(x));
       render();
     }
@@ -1174,6 +1248,343 @@
           </div>
         </article>`;
     }).join('');
+  }
+
+  /* ============================================================
+     share-card · canvas PNG renderer
+     ============================================================ */
+  // load image with CORS so canvas isn't tainted
+  function loadImg(src) {
+    return new Promise((resolve, reject) => {
+      if (!src) return resolve(null);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.referrerPolicy = 'no-referrer';
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+
+  // paper noise pattern · rendered once + reused
+  function paperPatternCanvas() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#F4EFE6'; ctx.fillRect(0, 0, 64, 64);
+    for (let i = 0; i < 220; i++) {
+      ctx.fillStyle = `rgba(27,27,27,${Math.random() * 0.07})`;
+      const x = Math.random() * 64, y = Math.random() * 64;
+      ctx.fillRect(x, y, 1, 1);
+    }
+    return c;
+  }
+
+  async function buildShareCard({ picks, defense, handle }) {
+    const W = 1080, H = 1350;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+
+    // paper background with subtle noise
+    const pat = ctx.createPattern(paperPatternCanvas(), 'repeat');
+    ctx.fillStyle = pat;
+    ctx.fillRect(0, 0, W, H);
+
+    // double-rule top border
+    ctx.fillStyle = '#1B1B1B';
+    ctx.fillRect(40, 40, W - 80, 4);
+    ctx.fillRect(40, 50, W - 80, 1);
+
+    // header text
+    ctx.fillStyle = '#1B1B1B';
+    ctx.textBaseline = 'top';
+
+    // handle small caps
+    ctx.font = '500 22px "JetBrains Mono", monospace';
+    ctx.fillText((handle ? '@' + handle : '@anonymous') + " · DHH TOP 5", 64, 76);
+
+    // huge REP wordmark
+    ctx.font = '400 220px Anton, Impact, sans-serif';
+    ctx.fillText('REP', 60, 110);
+    // orange dot
+    ctx.fillStyle = '#ED8B40';
+    ctx.beginPath();
+    ctx.arc(310, 290, 18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // "TOP 5" stencil tag
+    ctx.fillStyle = '#1B1B1B';
+    ctx.font = '400 56px Anton, Impact, sans-serif';
+    ctx.save();
+    ctx.translate(W - 80, 130);
+    ctx.rotate(-0.06);
+    ctx.fillStyle = '#ED8B40';
+    ctx.strokeStyle = '#1B1B1B';
+    ctx.lineWidth = 3;
+    ctx.textAlign = 'right';
+    ctx.strokeText('TOP 5', 0, 0);
+    ctx.fillText('TOP 5', 0, 0);
+    ctx.restore();
+    ctx.textAlign = 'start';
+
+    // 5 rows
+    const rowH = 138;
+    const rowsTop = 360;
+    const imgs = await Promise.all(picks.map(a => loadImg(a.image_url)));
+    for (let i = 0; i < 5; i++) {
+      const a = picks[i];
+      const y = rowsTop + i * rowH;
+      // rank number
+      ctx.fillStyle = i === 0 ? '#ED8B40' : '#1B1B1B';
+      ctx.font = '400 88px Anton, Impact, sans-serif';
+      ctx.fillText(String(i + 1).padStart(2, '0'), 64, y + 18);
+
+      // photo box 110x110
+      const px = 220, py = y + 10, ps = 110;
+      ctx.fillStyle = '#ECE5D7';
+      ctx.fillRect(px, py, ps, ps);
+      ctx.strokeStyle = '#1B1B1B';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(px, py, ps, ps);
+
+      if (imgs[i]) {
+        // object-fit cover crop math
+        const img = imgs[i];
+        const ratio = Math.max(ps / img.width, ps / img.height);
+        const drawW = img.width * ratio;
+        const drawH = img.height * ratio;
+        const dx = px + (ps - drawW) / 2;
+        const dy = py + (ps - drawH) / 2;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(px, py, ps, ps);
+        ctx.clip();
+        ctx.drawImage(img, dx, dy, drawW, drawH);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = '#9A9A9A';
+        ctx.font = '400 44px Anton, Impact, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(initials(a.stage_name), px + ps / 2, py + 30);
+        ctx.textAlign = 'start';
+      }
+
+      // name
+      ctx.fillStyle = '#1B1B1B';
+      ctx.font = '400 48px Anton, Impact, sans-serif';
+      const name = a.stage_name.toUpperCase();
+      ctx.fillText(name, 360, y + 20);
+
+      // city + tier mono small
+      ctx.fillStyle = '#6B6B6B';
+      ctx.font = '500 16px "JetBrains Mono", monospace';
+      const cityLabel = (a.city_represented || '').toLowerCase() + (a.active_status === 'RIP' ? ' · r.i.p.' : '');
+      ctx.fillText(cityLabel, 360, y + 78);
+
+      // row divider
+      ctx.strokeStyle = 'rgba(27,27,27,0.18)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(60, y + rowH - 10);
+      ctx.lineTo(W - 60, y + rowH - 10);
+      ctx.stroke();
+    }
+
+    // defend quote
+    if (defense && defense.trim()) {
+      const dY = rowsTop + 5 * rowH + 30;
+      ctx.fillStyle = '#ED8B40';
+      ctx.font = '400 80px "PT Serif", Georgia, serif';
+      ctx.fillText('“', 50, dY - 30);
+      ctx.fillStyle = '#1B1B1B';
+      ctx.font = 'italic 400 26px "PT Serif", Georgia, serif';
+      // wrap the defense text to 2 lines max
+      const maxW = W - 220;
+      const words = defense.trim().split(/\s+/);
+      const lines = [];
+      let line = '';
+      for (const w of words) {
+        const test = line ? line + ' ' + w : w;
+        if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+        else line = test;
+        if (lines.length >= 2) break;
+      }
+      if (line && lines.length < 3) lines.push(line);
+      lines.slice(0, 3).forEach((l, k) => ctx.fillText(l, 110, dY + k * 38));
+    }
+
+    // footer
+    ctx.fillStyle = '#1B1B1B';
+    ctx.fillRect(40, H - 70, W - 80, 1);
+    ctx.font = '500 18px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#1B1B1B';
+    ctx.fillText('rep.anirudhgoel.xyz', 64, H - 50);
+    ctx.fillStyle = '#ED8B40';
+    ctx.textAlign = 'right';
+    ctx.fillText('* asli DHH', W - 64, H - 50);
+    ctx.textAlign = 'start';
+
+    return c;
+  }
+
+  async function buildTierCard({ tiers, handle }) {
+    const W = 1080, H = 1350;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    const pat = ctx.createPattern(paperPatternCanvas(), 'repeat');
+    ctx.fillStyle = pat;
+    ctx.fillRect(0, 0, W, H);
+
+    // header
+    ctx.fillStyle = '#1B1B1B';
+    ctx.fillRect(40, 40, W - 80, 4);
+    ctx.fillRect(40, 50, W - 80, 1);
+
+    ctx.textBaseline = 'top';
+    ctx.font = '500 22px "JetBrains Mono", monospace';
+    ctx.fillText((handle ? '@' + handle : '@anonymous') + ' · DHH TIER LIST', 64, 76);
+
+    ctx.font = '400 144px Anton, Impact, sans-serif';
+    ctx.fillText('TIER', 60, 110);
+    ctx.fillStyle = '#ED8B40';
+    ctx.fillText('5', 415, 110);
+    ctx.fillStyle = '#1B1B1B';
+
+    // 5 tier rows
+    const letters = ['S', 'A', 'B', 'C', 'D'];
+    const colors = {
+      S: '#ED8B40',
+      A: '#1B1B1B',
+      B: '#C05B3A',
+      C: '#3A6AC0',
+      D: '#6B6B6B'
+    };
+    const rowsTop = 320;
+    const rowH = 180;
+    const letterW = 130;
+    const padX = 40;
+
+    // pre-load all referenced photos
+    const allSlugs = letters.flatMap(L => tiers[L] || []);
+    const imgCache = {};
+    await Promise.all(allSlugs.map(async slug => {
+      const a = BY_SLUG[slug]; if (!a) return;
+      imgCache[slug] = await loadImg(a.image_url);
+    }));
+
+    for (let i = 0; i < 5; i++) {
+      const L = letters[i];
+      const y = rowsTop + i * rowH;
+      // outer border
+      ctx.strokeStyle = '#1B1B1B';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(padX, y, W - padX * 2, rowH - 10);
+      // letter cell
+      ctx.fillStyle = colors[L];
+      ctx.fillRect(padX, y, letterW, rowH - 10);
+      ctx.fillStyle = L === 'S' ? '#1B1B1B' : '#F4EFE6';
+      ctx.font = '400 130px Anton, Impact, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(L, padX + letterW / 2, y + 22);
+      ctx.textAlign = 'start';
+
+      // artist mini-thumbs
+      const slugs = (tiers[L] || []).slice(0, 12); // cap at 12 per row in the export
+      const tStart = padX + letterW + 16;
+      const ts = (rowH - 10) - 16;
+      const gap = 8;
+      for (let k = 0; k < slugs.length; k++) {
+        const a = BY_SLUG[slugs[k]]; if (!a) continue;
+        const tx = tStart + k * (ts + gap);
+        if (tx + ts > W - padX) break;
+        const ty = y + 8;
+        ctx.fillStyle = '#ECE5D7';
+        ctx.fillRect(tx, ty, ts, ts);
+        ctx.strokeStyle = '#1B1B1B'; ctx.lineWidth = 1;
+        ctx.strokeRect(tx, ty, ts, ts);
+        const img = imgCache[a.slug];
+        if (img) {
+          const r = Math.max(ts / img.width, ts / img.height);
+          const dw = img.width * r, dh = img.height * r;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(tx, ty, ts, ts);
+          ctx.clip();
+          ctx.drawImage(img, tx + (ts - dw) / 2, ty + (ts - dh) / 2, dw, dh);
+          ctx.restore();
+        } else {
+          ctx.fillStyle = '#9A9A9A';
+          ctx.font = '400 36px Anton, Impact, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(initials(a.stage_name), tx + ts / 2, ty + 28);
+          ctx.textAlign = 'start';
+        }
+        // tiny label strip
+        ctx.fillStyle = 'rgba(27,27,27,0.8)';
+        ctx.fillRect(tx, ty + ts - 18, ts, 18);
+        ctx.fillStyle = '#F4EFE6';
+        ctx.font = '500 9px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        const lbl = a.stage_name.length > 14 ? a.stage_name.slice(0, 13) + '…' : a.stage_name;
+        ctx.fillText(lbl, tx + ts / 2, ty + ts - 14);
+        ctx.textAlign = 'start';
+      }
+    }
+
+    // footer
+    ctx.fillStyle = '#1B1B1B';
+    ctx.fillRect(40, H - 70, W - 80, 1);
+    ctx.font = '500 18px "JetBrains Mono", monospace';
+    ctx.fillText('rep.anirudhgoel.xyz/tier.html', 64, H - 50);
+    ctx.fillStyle = '#ED8B40';
+    ctx.textAlign = 'right';
+    ctx.fillText('* asli DHH', W - 64, H - 50);
+    ctx.textAlign = 'start';
+
+    return c;
+  }
+
+  function showShareModal(title, canvas, filename) {
+    let modal = $('#shareModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'shareModal';
+      modal.className = 'share-modal';
+      modal.innerHTML = `
+        <div class="share-modal__inner">
+          <div class="share-modal__head">
+            <h3 class="share-modal__title" id="shareModalTitle"></h3>
+            <button class="share-modal__close" id="shareModalClose">×</button>
+          </div>
+          <div id="shareCanvasWrap"></div>
+          <div class="share-modal__actions">
+            <button class="btn-stamp" id="downloadPng">download PNG →</button>
+            <button class="dice-btn" id="closeShare">close</button>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('is-open'); });
+      $('#shareModalClose', modal).addEventListener('click', () => modal.classList.remove('is-open'));
+      $('#closeShare', modal).addEventListener('click', () => modal.classList.remove('is-open'));
+    }
+    $('#shareModalTitle').textContent = title;
+    const wrap = $('#shareCanvasWrap');
+    wrap.innerHTML = '';
+    canvas.className = 'share-modal__canvas';
+    wrap.appendChild(canvas);
+    $('#downloadPng').onclick = () => {
+      canvas.toBlob((blob) => {
+        if (!blob) { alert('couldn\'t generate PNG. try downloading on a desktop.'); return; }
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename || 'rep.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      }, 'image/png');
+    };
+    modal.classList.add('is-open');
   }
 
 })();
