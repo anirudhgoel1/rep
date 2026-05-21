@@ -231,6 +231,28 @@
      location.pathname.includes('cyphers') ? 'cyphers' :
      'landing');
 
+  /* GSAP scroll reveals · registered once per page load */
+  function initScrollReveals() {
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+      // fallback: snap reveal class on any [data-reveal] using intersection observer
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-revealed'); io.unobserve(e.target); } });
+      }, { threshold: 0.12 });
+      $$('[data-reveal]').forEach(el => io.observe(el));
+      return;
+    }
+    gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.batch('[data-reveal]', {
+      start: 'top 82%',
+      onEnter: batch => gsap.to(batch, {
+        opacity: 1, y: 0, duration: 0.85, stagger: 0.12,
+        ease: 'power3.out', overwrite: true,
+        onStart: () => batch.forEach(el => el.classList.add('is-revealed'))
+      }),
+      onLeaveBack: batch => gsap.set(batch, { opacity: 0, y: 60, overwrite: true })
+    });
+  }
+
   if (page === 'landing') initLanding();
   if (page === 'build') initBuilder();
   if (page === 'artist') initArtist();
@@ -406,6 +428,55 @@
         el.style.padding = '0';
         el.style.overflow = 'hidden';
       });
+    }
+
+    // feature showcase mockups · use real artists for credibility
+    renderFeatureMockups();
+    // wire scroll reveals after mockups are in DOM
+    setTimeout(initScrollReveals, 50);
+
+    function renderFeatureMockups() {
+      // pick 4 hardcore-S artists for the mockups (deterministic, same on every load)
+      const showcasePool = [...defaultPool(ARTISTS)]
+        .sort((a, b) => mockVotes(b) - mockVotes(a))
+        .slice(0, 5);
+
+      const m1 = $('#mockupTop5');
+      if (m1) {
+        m1.innerHTML = `
+          <div class="mockup-top5__hdr">top 5 · live</div>
+          ${showcasePool.slice(0, 5).map((a, i) => `
+            <div class="mockup-top5__row">
+              <span class="n">${String(i+1).padStart(2,'0')}</span>
+              <span class="ph">${photoHtml(a)}</span>
+              <span>
+                <div class="nm">${esc(a.stage_name)}</div>
+                <div class="ct">${esc(lower(a.city_represented || ''))}</div>
+              </span>
+            </div>`).join('')}`;
+      }
+
+      const m2 = $('#mockupTier');
+      if (m2) {
+        // pick 3-4 per tier for the mockup
+        const byTier = (t) => ARTISTS.filter(a => a.respect_tier === t && !a.is_crossover).slice(0, 4);
+        m2.innerHTML = ['S','A','B','C','D'].map(t => `
+          <div class="mockup-tier__row" data-tier="${t}">
+            <div class="lt">${t}</div>
+            <div class="rs">
+              ${byTier(t).map(a => `<div class="dot">${photoHtml(a)}</div>`).join('')}
+            </div>
+          </div>`).join('');
+      }
+
+      const m3 = $('#mockupShareBody');
+      if (m3) {
+        m3.innerHTML = showcasePool.slice(0, 5).map((a, i) => `
+          <div class="row">
+            <span>${String(i+1).padStart(2,'0')}</span>
+            <span>${esc(a.stage_name)}</span>
+          </div>`).join('');
+      }
     }
 
     // dynamic city counts on landing tiles
@@ -1286,62 +1357,83 @@
     c.width = W; c.height = H;
     const ctx = c.getContext('2d');
 
-    // paper background with subtle noise
+    // paper background with subtle noise (used below the dark band)
     const pat = ctx.createPattern(paperPatternCanvas(), 'repeat');
     ctx.fillStyle = pat;
     ctx.fillRect(0, 0, W, H);
 
-    // double-rule top border
-    ctx.fillStyle = '#1B1B1B';
-    ctx.fillRect(40, 40, W - 80, 4);
-    ctx.fillRect(40, 50, W - 80, 1);
+    // ============ DARK HEADER BAND (0 to 360) ============
+    const HEADER_H = 360;
+    // base ink fill
+    ctx.fillStyle = '#0E0E10';
+    ctx.fillRect(0, 0, W, HEADER_H);
+    // soft burn glow in the bottom-right of the band
+    const grad = ctx.createRadialGradient(W * 0.85, HEADER_H * 0.85, 30, W * 0.7, HEADER_H * 0.7, 500);
+    grad.addColorStop(0, 'rgba(237, 139, 64, 0.22)');
+    grad.addColorStop(1, 'rgba(237, 139, 64, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, HEADER_H);
 
-    // header text
-    ctx.fillStyle = '#1B1B1B';
+    // top burn rule
+    ctx.fillStyle = '#ED8B40';
+    ctx.fillRect(0, 0, W, 6);
+
     ctx.textBaseline = 'top';
 
-    // handle small caps
-    ctx.font = '500 22px "JetBrains Mono", monospace';
-    ctx.fillText((handle ? '@' + handle : '@anonymous') + " · DHH TOP 5", 64, 76);
-
-    // huge REP wordmark
-    ctx.font = '400 220px Anton, Impact, sans-serif';
-    ctx.fillText('REP', 60, 110);
-    // orange dot
+    // handle small mono
     ctx.fillStyle = '#ED8B40';
-    ctx.beginPath();
-    ctx.arc(310, 290, 18, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.font = '500 18px "JetBrains Mono", monospace';
+    const handleStr = (handle ? '@' + handle : '@anonymous') + '  ·  DHH TOP 5';
+    ctx.fillText(handleStr.toUpperCase(), 60, 60);
 
-    // "TOP 5" stencil tag
-    ctx.fillStyle = '#1B1B1B';
-    ctx.font = '400 56px Anton, Impact, sans-serif';
-    ctx.save();
-    ctx.translate(W - 80, 130);
-    ctx.rotate(-0.06);
-    ctx.fillStyle = '#ED8B40';
-    ctx.strokeStyle = '#1B1B1B';
-    ctx.lineWidth = 3;
+    // dateline right
+    ctx.fillStyle = '#9A9A9A';
+    const dt = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
     ctx.textAlign = 'right';
-    ctx.strokeText('TOP 5', 0, 0);
-    ctx.fillText('TOP 5', 0, 0);
-    ctx.restore();
+    ctx.fillText(dt.toUpperCase(), W - 60, 60);
     ctx.textAlign = 'start';
 
-    // 5 rows
-    const rowH = 138;
-    const rowsTop = 360;
+    // massive REP wordmark · paper-color · with burn shadow for depth
+    ctx.fillStyle = '#F4EFE6';
+    ctx.font = '400 200px Anton, Impact, sans-serif';
+    // shadow underneath
+    ctx.save();
+    ctx.translate(6, 6);
+    ctx.fillStyle = '#ED8B40';
+    ctx.fillText('REP', 56, 110);
+    ctx.restore();
+    ctx.fillStyle = '#F4EFE6';
+    ctx.fillText('REP', 56, 110);
+    // orange dot replacing the period
+    ctx.fillStyle = '#ED8B40';
+    ctx.beginPath();
+    ctx.arc(320, 285, 16, 0, Math.PI * 2);
+    ctx.fill();
+
+    // tagline italic serif
+    ctx.fillStyle = '#9A9A9A';
+    ctx.font = 'italic 400 22px "PT Serif", Georgia, serif';
+    ctx.fillText('ranked by the heads. arguments encouraged.', 60, 320);
+
+    // bottom burn rule of the header band
+    ctx.fillStyle = '#ED8B40';
+    ctx.fillRect(0, HEADER_H - 4, W, 4);
+
+    // ============ 5 ROWS ON PAPER (360 to ~1140) ============
+    const rowH = 144;
+    const rowsTop = HEADER_H + 20;
     const imgs = await Promise.all(picks.map(a => loadImg(a.image_url)));
     for (let i = 0; i < 5; i++) {
       const a = picks[i];
       const y = rowsTop + i * rowH;
-      // rank number
-      ctx.fillStyle = i === 0 ? '#ED8B40' : '#1B1B1B';
-      ctx.font = '400 88px Anton, Impact, sans-serif';
-      ctx.fillText(String(i + 1).padStart(2, '0'), 64, y + 18);
 
-      // photo box 110x110
-      const px = 220, py = y + 10, ps = 110;
+      // rank number — saffron for #1, ink for rest
+      ctx.fillStyle = i === 0 ? '#ED8B40' : '#1B1B1B';
+      ctx.font = '400 96px Anton, Impact, sans-serif';
+      ctx.fillText(String(i + 1).padStart(2, '0'), 60, y + 14);
+
+      // photo box 116x116
+      const px = 220, py = y + 12, ps = 116;
       ctx.fillStyle = '#ECE5D7';
       ctx.fillRect(px, py, ps, ps);
       ctx.strokeStyle = '#1B1B1B';
@@ -1349,57 +1441,58 @@
       ctx.strokeRect(px, py, ps, ps);
 
       if (imgs[i]) {
-        // object-fit cover crop math
         const img = imgs[i];
         const ratio = Math.max(ps / img.width, ps / img.height);
-        const drawW = img.width * ratio;
-        const drawH = img.height * ratio;
-        const dx = px + (ps - drawW) / 2;
-        const dy = py + (ps - drawH) / 2;
+        const dw = img.width * ratio, dh = img.height * ratio;
         ctx.save();
         ctx.beginPath();
         ctx.rect(px, py, ps, ps);
         ctx.clip();
-        ctx.drawImage(img, dx, dy, drawW, drawH);
+        ctx.drawImage(img, px + (ps - dw) / 2, py + (ps - dh) / 2, dw, dh);
         ctx.restore();
       } else {
         ctx.fillStyle = '#9A9A9A';
-        ctx.font = '400 44px Anton, Impact, sans-serif';
+        ctx.font = '400 48px Anton, Impact, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(initials(a.stage_name), px + ps / 2, py + 30);
+        ctx.fillText(initials(a.stage_name), px + ps / 2, py + 32);
         ctx.textAlign = 'start';
       }
 
-      // name
+      // name — auto-shrink if too long
       ctx.fillStyle = '#1B1B1B';
-      ctx.font = '400 48px Anton, Impact, sans-serif';
-      const name = a.stage_name.toUpperCase();
-      ctx.fillText(name, 360, y + 20);
+      let nameSize = 50;
+      const maxNameW = W - 380;
+      const nm = a.stage_name.toUpperCase();
+      ctx.font = `400 ${nameSize}px Anton, Impact, sans-serif`;
+      while (ctx.measureText(nm).width > maxNameW && nameSize > 30) {
+        nameSize -= 2;
+        ctx.font = `400 ${nameSize}px Anton, Impact, sans-serif`;
+      }
+      ctx.fillText(nm, 360, y + 18);
 
-      // city + tier mono small
+      // city + status mono
       ctx.fillStyle = '#6B6B6B';
       ctx.font = '500 16px "JetBrains Mono", monospace';
-      const cityLabel = (a.city_represented || '').toLowerCase() + (a.active_status === 'RIP' ? ' · r.i.p.' : '');
-      ctx.fillText(cityLabel, 360, y + 78);
+      const cityLabel = (a.city_represented || '').toLowerCase() + (a.active_status === 'RIP' ? '  ·  r.i.p.' : '') + (a.is_crossover ? '  ·  crossover' : (a.respect_tier === 'S' ? '  ·  pen game' : ''));
+      ctx.fillText(cityLabel, 360, y + 84);
 
       // row divider
-      ctx.strokeStyle = 'rgba(27,27,27,0.18)';
+      ctx.strokeStyle = 'rgba(27,27,27,0.14)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(60, y + rowH - 10);
-      ctx.lineTo(W - 60, y + rowH - 10);
+      ctx.moveTo(60, y + rowH - 4);
+      ctx.lineTo(W - 60, y + rowH - 4);
       ctx.stroke();
     }
 
-    // defend quote
+    // ============ DEFEND QUOTE (~1100 to 1240) ============
+    const dY = rowsTop + 5 * rowH + 18;
     if (defense && defense.trim()) {
-      const dY = rowsTop + 5 * rowH + 30;
       ctx.fillStyle = '#ED8B40';
       ctx.font = '400 80px "PT Serif", Georgia, serif';
-      ctx.fillText('“', 50, dY - 30);
+      ctx.fillText('“', 56, dY - 28);
       ctx.fillStyle = '#1B1B1B';
-      ctx.font = 'italic 400 26px "PT Serif", Georgia, serif';
-      // wrap the defense text to 2 lines max
+      ctx.font = 'italic 400 24px "PT Serif", Georgia, serif';
       const maxW = W - 220;
       const words = defense.trim().split(/\s+/);
       const lines = [];
@@ -1408,21 +1501,25 @@
         const test = line ? line + ' ' + w : w;
         if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
         else line = test;
-        if (lines.length >= 2) break;
       }
-      if (line && lines.length < 3) lines.push(line);
-      lines.slice(0, 3).forEach((l, k) => ctx.fillText(l, 110, dY + k * 38));
+      if (line) lines.push(line);
+      lines.slice(0, 3).forEach((l, k) => ctx.fillText(l, 110, dY + k * 34));
+    } else {
+      // no defense · soft prompt line
+      ctx.fillStyle = '#9A9A9A';
+      ctx.font = 'italic 400 18px "PT Serif", Georgia, serif';
+      ctx.fillText('add a defense next time. one line, 140 chars.', 60, dY);
     }
 
-    // footer
+    // ============ FOOTER (1280 to 1350) ============
     ctx.fillStyle = '#1B1B1B';
-    ctx.fillRect(40, H - 70, W - 80, 1);
-    ctx.font = '500 18px "JetBrains Mono", monospace';
+    ctx.fillRect(40, H - 76, W - 80, 1);
+    ctx.font = '500 16px "JetBrains Mono", monospace';
     ctx.fillStyle = '#1B1B1B';
-    ctx.fillText('rep.anirudhgoel.xyz', 64, H - 50);
+    ctx.fillText('REP.ANIRUDHGOEL.XYZ', 60, H - 54);
     ctx.fillStyle = '#ED8B40';
     ctx.textAlign = 'right';
-    ctx.fillText('* asli DHH', W - 64, H - 50);
+    ctx.fillText('* ASLI DHH', W - 60, H - 54);
     ctx.textAlign = 'start';
 
     return c;

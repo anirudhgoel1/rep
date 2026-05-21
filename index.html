@@ -28,7 +28,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Serif:ital,wght@1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Devanagari:wght@400;700&display=swap">
 
-  <link rel="stylesheet" href="/styles.css?v=20260521-4">
+  <link rel="stylesheet" href="/styles.css?v=20260521-5">
+  <script src="/assets/vendor/gsap.min.js" defer></script>
+  <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
 
   <script type="application/ld+json">
   {
@@ -44,36 +46,89 @@
 </head>
 <body>
 
-<div class="tape" aria-hidden="true">
-  <div class="tape__inner">rep your city · rep your hood · rep your favourite · ranked by you · arguments encouraged · rep your city · rep your hood · rep your favourite · ranked by you · arguments encouraged</div>
-</div>
+<!-- DARK HERO BAND ----------------------------------------- -->
+<section class="hero-dark">
+  <div class="shell">
+    <header class="topbar topbar--on-dark" id="topbar"></header>
+  </div>
+  <div class="hero-dark__deva" aria-hidden="true">असली</div>
+  <div class="shell">
+    <div class="hero-dark__inner">
+      <p class="hero-dark__kicker">desi hip hop · ranked by the heads · est 2026</p>
+      <h1 class="hero-dark__rep">REP<span class="tilt">.</span></h1>
+      <p class="hero-dark__tagline">the <span class="kw">asli</span> DHH top 5. ranked by pen game. arguments encouraged.</p>
+      <p class="hero-dark__hook">85 artists across 10 cities. spotify embeds you can play. drop your five, tier the scene, settle the daily 1v1. no signup. no fluff. just bars, beef, and opinions from the people who know.</p>
+      <div class="hero-dark__cta">
+        <a href="/build.html" class="btn-dark-primary">drop your top 5</a>
+        <a href="#what-you-can-do" class="btn-dark-ghost">see what you can do ↓</a>
+      </div>
+      <div class="saved-hint" id="savedHint" style="display:none; margin-top: 36px;">
+        <span class="text">your last top 5 is saved.</span>
+        <a href="/build.html">edit it →</a>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue" aria-hidden="true">scroll for the heads' picks</div>
+</section>
 
 <div class="shell">
 
-  <header class="topbar" id="topbar"></header>
-
-  <!-- hero -->
-  <section class="hero">
-    <div class="hero__deva" aria-hidden="true">रेप</div>
-    <p class="hero__kicker">desi hip hop · ranked by the gully</p>
-    <div class="hero__lockup">
-      <h1 class="hero__rep">REP<span class="tilt">.</span></h1>
-    </div>
-    <p class="hero__sub">the real <span class="kw">DHH top 5</span>. ranked by you. arguments encouraged.</p>
-    <p class="hero__hook">85 artists across 10 cities. spotify embeds you can play. drop your five, tier the scene, defend your number one, settle the daily 1v1. no signup. no fluff. just bars, beef, and opinions.</p>
-    <div class="hero__cta">
-      <a href="/build.html" class="btn-stamp">drop your top 5</a>
-      <a href="/leaderboard.html" class="btn-ghost">india's top 85 →</a>
-      <button class="dice-btn" id="diceBtn">random rapper</button>
-    </div>
-    <div class="saved-hint" id="savedHint" style="display:none;">
-      <span class="text">your last top 5 is saved.</span>
-      <a href="/build.html">edit it →</a>
-    </div>
-  </section>
-
   <!-- marquee · scrolling photo strip of top 40 -->
-  <div class="marquee" id="marquee" aria-hidden="true"></div>
+  <div class="marquee" id="marquee" aria-hidden="true" style="margin-top: 0; margin-bottom: 0;"></div>
+
+  <!-- WHAT YOU CAN DO · feature showcase --------------------- -->
+  <section class="showcase" id="what-you-can-do">
+    <div class="showcase__intro">
+      <p class="showcase__kicker">what you can do here</p>
+      <h2 class="showcase__title">build it. tier it. <span class="burn">share it.</span></h2>
+    </div>
+
+    <article class="feature" data-reveal>
+      <div class="feature__body">
+        <div class="feature__num">01</div>
+        <h3 class="feature__title">drop your <span style="color: var(--burn);">top 5</span></h3>
+        <p class="feature__copy">pick five from 85 verified DHH artists. drag, tap, reorder. filter by city, era, language, subgenre. defend your number one in 140 characters. lock it in and the PNG card auto-renders for the post.</p>
+        <a class="feature__cta" href="/build.html">open the builder</a>
+      </div>
+      <div class="feature__mockup">
+        <div class="mockup-top5" id="mockupTop5"></div>
+      </div>
+    </article>
+
+    <article class="feature" data-reveal>
+      <div class="feature__body">
+        <div class="feature__num">02</div>
+        <h3 class="feature__title">tier the <span style="color: var(--burn);">whole scene</span></h3>
+        <p class="feature__copy">drag any of the 85 into S, A, B, C, D. autosaves locally. export as a designer-tier shareable PNG with photos and tier blocks the size of an actual tier list. argue with science.</p>
+        <a class="feature__cta" href="/tier.html">make a tier list</a>
+      </div>
+      <div class="feature__mockup">
+        <div class="mockup-tier" id="mockupTier"></div>
+      </div>
+    </article>
+
+    <article class="feature" data-reveal>
+      <div class="feature__body">
+        <div class="feature__num">03</div>
+        <h3 class="feature__title">share <span style="color: var(--burn);">your taste</span></h3>
+        <p class="feature__copy">every top 5 and every tier list becomes a 1080×1350 PNG you can post anywhere. paper grain, dark header band, photos baked in. quote yourself on the defense line.</p>
+        <a class="feature__cta" href="/build.html">try it</a>
+      </div>
+      <div class="feature__mockup">
+        <div class="mockup-share" id="mockupShare">
+          <div class="mockup-share__head">
+            <div class="mockup-share__handle">@bantai69 · dhh top 5</div>
+            <div class="mockup-share__rep">REP<span class="b">.</span></div>
+          </div>
+          <div class="mockup-share__body" id="mockupShareBody"></div>
+          <div class="mockup-share__foot">
+            <span>rep.anirudhgoel.xyz</span>
+            <span class="burn">* asli DHH</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
 
   <!-- artist of the day -->
   <section class="bar-of-day" id="artistOfDay" aria-label="artist of the day">
@@ -280,7 +335,7 @@
   <footer class="foot">
     <div class="foot__row">
       <span class="foot__mark">rep<span class="dot"></span></span>
-      <span class="foot__line">85 artists. 10 cities deep. one paper, one accent, no dark mode.</span>
+      <span class="foot__line">85 artists. 10 cities deep. ranked by the heads, not the algorithm.</span>
     </div>
     <div class="foot__row">
       <span class="foot__tip">built with respect. <a href="upi://pay?pa=7814769892@yescred&pn=Anirudh%20Goel&cu=INR" id="upiLink">tip via upi →</a></span>
@@ -290,6 +345,6 @@
 
 </div>
 
-<script src="/app.js?v=20260521-4" defer></script>
+<script src="/app.js?v=20260521-5" defer></script>
 </body>
 </html>
