@@ -140,7 +140,7 @@
     const path = location.pathname;
     const isActive = (href) => path === href || path.startsWith(href.replace('.html', ''));
     el.innerHTML = `
-      <a href="/" class="topbar__mark" aria-label="Rep">rep<span class="dot"></span></a>
+      <a href="/" class="topbar__mark" aria-label="Rep">REP<span class="dot"></span></a>
       <nav class="topbar__nav" aria-label="primary">
         <a href="/build.html" class="${isActive('/build.html') ? 'is-active' : ''}">drop 5</a>
         <a href="/tier.html" class="${isActive('/tier.html') ? 'is-active' : ''}">tier</a>

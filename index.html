@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Serif:ital,wght@1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Devanagari:wght@400;700&display=swap">
 
-  <link rel="stylesheet" href="/styles.css?v=20260521-6">
+  <link rel="stylesheet" href="/styles.css?v=20260521-7">
   <script src="/assets/vendor/gsap.min.js" defer></script>
   <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
 
@@ -46,21 +46,31 @@
 </head>
 <body>
 
-<!-- DARK HERO BAND ----------------------------------------- -->
+<!-- HERO BAND · the masthead ------------------------------- -->
 <section class="hero-dark">
   <div class="shell">
-    <header class="topbar topbar--on-dark" id="topbar"></header>
+    <header class="topbar" id="topbar"></header>
   </div>
   <div class="hero-dark__deva" aria-hidden="true">असली</div>
   <div class="shell">
     <div class="hero-dark__inner">
-      <p class="hero-dark__kicker">desi hip hop · ranked by the heads · est 2026</p>
-      <h1 class="hero-dark__rep">REP<span class="tilt">.</span></h1>
+      <div class="chapter" style="border-bottom: 0; margin-bottom: 22px; padding-bottom: 0;">
+        <span class="chapter__num">00</span>
+        <span class="chapter__label">desi hip hop · ranked by the heads · est 2026</span>
+        <span class="chapter__rule"></span>
+      </div>
+      <h1 class="hero-dark__rep">REP<span class="tilt"></span></h1>
       <p class="hero-dark__tagline">the <span class="kw">asli</span> DHH top 5. ranked by pen game. arguments encouraged.</p>
-      <p class="hero-dark__hook">85 artists across 10 cities. spotify embeds you can play. drop your five, tier the scene, settle the daily 1v1. no signup. no fluff. just bars, beef, and opinions from the people who know.</p>
       <div class="hero-dark__cta">
         <a href="/build.html" class="btn-dark-primary">drop your top 5</a>
         <a href="#what-you-can-do" class="btn-dark-ghost">see what you can do ↓</a>
+      </div>
+      <div class="hero-dark__stats">
+        <div class="col"><span>artists</span><strong>85</strong></div>
+        <div class="col"><span>cities</span><strong>10</strong></div>
+        <div class="col"><span>labels</span><strong>10</strong></div>
+        <div class="col"><span>cyphers</span><strong>04</strong></div>
+        <div class="col"><span>verified beefs</span><strong>03</strong></div>
       </div>
       <div class="saved-hint" id="savedHint" style="display:none; margin-top: 36px;">
         <span class="text">your last top 5 is saved.</span>
@@ -76,10 +86,14 @@
   <!-- marquee · scrolling photo strip of top 40 -->
   <div class="marquee" id="marquee" aria-hidden="true" style="margin-top: 0; margin-bottom: 0;"></div>
 
-  <!-- WHAT YOU CAN DO · feature showcase --------------------- -->
+  <!-- CHAPTER 01 · WHAT YOU CAN DO -------------------------- -->
   <section class="showcase" id="what-you-can-do">
+    <div class="chapter">
+      <span class="chapter__num">01</span>
+      <span class="chapter__label">what you can do here · three moves</span>
+      <span class="chapter__rule"></span>
+    </div>
     <div class="showcase__intro">
-      <p class="showcase__kicker">what you can do here</p>
       <h2 class="showcase__title">build it. tier it. <span class="burn">share it.</span></h2>
     </div>
 
@@ -135,56 +149,80 @@
     <div class="bar-of-day__kicker">artist of the day · loading…</div>
   </section>
 
-  <!-- live ticker -->
+  <!-- CHAPTER 02 · INDIA RIGHT NOW -------------------------- -->
   <section class="section" id="leaderboard">
-    <div class="section__head">
-      <h2 class="section__title">india <span class="burn">right now</span></h2>
-      <p class="section__meta"><span class="live">default = pen game · crossovers buried by default</span></p>
+    <div class="chapter">
+      <span class="chapter__num">02</span>
+      <span class="chapter__label">india right now · the heads' top 5</span>
+      <span class="chapter__rule"></span>
     </div>
-    <div id="rankToggle" class="mode-toggle" style="margin-bottom: 22px;"></div>
+    <div class="section__head">
+      <h2 class="section__title">the <span class="burn">pen game</span> top five</h2>
+      <p class="section__meta"><span class="live">crossovers buried · streams toggle in /leaderboard</span></p>
+    </div>
     <ol class="tickets" id="tickets">
       <li class="ticket"><span class="ticket__rank">--</span><span class="ticket__body"><span class="ticket__name">loading roster…</span><span class="ticket__city">one moment</span></span></li>
     </ol>
-    <a href="/leaderboard.html" class="see-all">open the full top 85</a>
+    <a href="/leaderboard.html" class="see-all">open the full top 85 →</a>
   </section>
 
-  <!-- cities · cinematic dark bento -->
-  <section class="zone-dark" id="cities">
-    <div class="section__head" style="margin-bottom: 36px;">
-      <h2 class="section__title">rep your <span class="burn">city</span></h2>
-      <p class="section__meta">nine doors · the gully is hyperlocal</p>
+  <!-- CHAPTER 03 · REP YOUR CITY ---------------------------- -->
+  <section class="section" id="cities">
+    <div class="chapter">
+      <span class="chapter__num">03</span>
+      <span class="chapter__label">rep your city · the gully is hyperlocal</span>
+      <span class="chapter__rule"></span>
+    </div>
+    <div class="section__head" style="margin-bottom: 32px;">
+      <h2 class="section__title">nine <span class="burn">doors</span></h2>
+      <p class="section__meta">85 artists · 10 cities · neighborhoods produce sounds</p>
     </div>
     <div class="bento-cities" id="cityBento">
       <p class="empty-grid" style="color: var(--ash);">loading the cities…</p>
     </div>
   </section>
 
-  <!-- beefs preview -->
+  <!-- CHAPTER 04 · THE BEEFS -------------------------------- -->
   <section class="section" id="beefs">
+    <div class="chapter">
+      <span class="chapter__num">04</span>
+      <span class="chapter__label">the beefs · receipts attached</span>
+      <span class="chapter__rule"></span>
+    </div>
     <div class="section__head">
-      <h2 class="section__title">the <span class="burn">beefs</span></h2>
-      <p class="section__meta">four eras · verified diss tracks · receipts</p>
+      <h2 class="section__title">verified <span class="blood">friction</span></h2>
+      <p class="section__meta">only beefs with public diss tracks make this page</p>
     </div>
     <div class="beefs" id="beefPreview">
-      <p class="empty-grid">loading the receipts…</p>
+      <p class="empty-grid" style="color: var(--ash);">loading the receipts…</p>
     </div>
     <a href="/beefs.html" class="see-all">open the full beef timeline →</a>
   </section>
 
-  <!-- the vault · dark compact grid -->
-  <section class="zone-dark" id="vault">
-    <div class="section__head" style="margin-bottom: 36px;">
-      <h2 class="section__title">the <span class="burn">vault</span></h2>
-      <p class="section__meta">eight doors deeper · the back catalogue</p>
+  <!-- CHAPTER 05 · THE VAULT -------------------------------- -->
+  <section class="section" id="vault">
+    <div class="chapter">
+      <span class="chapter__num">05</span>
+      <span class="chapter__label">the vault · back catalogue</span>
+      <span class="chapter__rule"></span>
+    </div>
+    <div class="section__head" style="margin-bottom: 32px;">
+      <h2 class="section__title">eight doors <span class="burn">deeper</span></h2>
+      <p class="section__meta">labels · producers · cyphers · slang · timeline · compare · mixtape · beefs</p>
     </div>
     <div class="vault-grid" id="vaultGrid"></div>
   </section>
 
-  <!-- daily 1v1 -->
+  <!-- CHAPTER 06 · TODAY · 1V1 ------------------------------ -->
   <section class="section" id="daily">
+    <div class="chapter">
+      <span class="chapter__num">06</span>
+      <span class="chapter__label">today · 1v1 · the daily debate</span>
+      <span class="chapter__rule"></span>
+    </div>
     <div class="section__head">
-      <h2 class="section__title">today <span class="burn">·</span> 1v1</h2>
-      <p class="section__meta">south meets west · drill kings</p>
+      <h2 class="section__title">two artists. <span class="burn">one tap.</span></h2>
+      <p class="section__meta">fresh matchup every day · vote opens with the backend</p>
     </div>
     <div class="duel">
       <div class="duel__side">
@@ -199,18 +237,22 @@
         <div class="duel__city">pune</div>
       </div>
     </div>
-    <p class="duel__theme">opens with leaderboard. one tap to vote. fresh matchup every day, when the backend ships.</p>
+    <p class="duel__theme">app.js loads today's matchup from the hardcore pool.</p>
   </section>
 
-  <!-- defend wall preview · example takes, real wall ships next -->
+  <!-- CHAPTER 07 · DEFEND YOUR #1 --------------------------- -->
   <section class="section" id="defend">
-    <div class="section__head">
-      <h2 class="section__title">defend <span class="burn">your #1</span></h2>
-      <p class="section__meta">how the format will look · real submissions open with the backend</p>
+    <div class="chapter">
+      <span class="chapter__num">07</span>
+      <span class="chapter__label">defend your #1 · pull quotes from the wall</span>
+      <span class="chapter__rule"></span>
     </div>
-    <p style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--mute); margin-bottom: 28px; max-width: 720px;">
-      one line per pick. 140 character max. handle optional. upvote what reads true.
-      below are example takes in the format · the wall opens for real submissions when the backend ships.
+    <div class="section__head">
+      <h2 class="section__title">say it <span class="burn">louder</span></h2>
+      <p class="section__meta">one line per pick · 140 chars max · upvote what reads true</p>
+    </div>
+    <p style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); margin-bottom: 56px; max-width: 720px;">
+      example format below · the wall opens for real submissions when the backend ships.
     </p>
     <div class="defend-list">
       <figure class="quote">
@@ -228,9 +270,9 @@
         </figcaption>
       </figure>
       <figure class="quote">
-        <p class="quote__text">karan aujla makes radio with a pen game that doesn't need radio.</p>
+        <p class="quote__text">krsna writes for the page. the verse is the album. the album is the canon.</p>
         <figcaption class="quote__meta">
-          <span class="defending">defending karan aujla</span>
+          <span class="defending">defending krsna</span>
           <span>example take</span>
         </figcaption>
       </figure>
@@ -251,6 +293,6 @@
 
 </div>
 
-<script src="/app.js?v=20260521-6" defer></script>
+<script src="/app.js?v=20260521-7" defer></script>
 </body>
 </html>
