@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Serif:ital,wght@1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Devanagari:wght@400;700&display=swap">
 
-  <link rel="stylesheet" href="/styles.css?v=20260521-5">
+  <link rel="stylesheet" href="/styles.css?v=20260521-6">
   <script src="/assets/vendor/gsap.min.js" defer></script>
   <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
 
@@ -148,67 +148,14 @@
     <a href="/leaderboard.html" class="see-all">open the full top 85</a>
   </section>
 
-  <!-- cities -->
-  <section class="section" id="cities">
-    <div class="section__head">
+  <!-- cities · cinematic dark bento -->
+  <section class="zone-dark" id="cities">
+    <div class="section__head" style="margin-bottom: 36px;">
       <h2 class="section__title">rep your <span class="burn">city</span></h2>
-      <p class="section__meta">85 artists · 10 cities · one accent each</p>
+      <p class="section__meta">nine doors · the gully is hyperlocal</p>
     </div>
-    <div class="cities">
-      <a href="/city.html?city=Mumbai" class="tag" data-city="mumbai">
-        <span class="tag__city">Mumbai</span>
-        <span class="tag__count">gully wave</span>
-        <span class="tag__view">view the city</span>
-        <span class="tag__deva" aria-hidden="true">मुंबई</span>
-      </a>
-      <a href="/city.html?city=Delhi" class="tag" data-city="delhi">
-        <span class="tag__city">Delhi</span>
-        <span class="tag__count">lyrical wave</span>
-        <span class="tag__view">view the city</span>
-        <span class="tag__deva" aria-hidden="true">दिल्ली</span>
-      </a>
-      <a href="/city.html?city=Punjab" class="tag" data-city="punjab">
-        <span class="tag__city">Punjab</span>
-        <span class="tag__count">the parallel kingdom</span>
-        <span class="tag__view">view the city</span>
-        <span class="tag__deva" aria-hidden="true">ਪੰਜਾਬ</span>
-      </a>
-      <a href="/city.html?city=Bengaluru" class="tag" data-city="bengaluru">
-        <span class="tag__city">Bengaluru</span>
-        <span class="tag__count">the global lane</span>
-        <span class="tag__view">view the city</span>
-        <span class="tag__deva" aria-hidden="true">ಬೆಂಗಳೂರು</span>
-      </a>
-      <a href="/city.html?city=Pune" class="tag" data-city="pune">
-        <span class="tag__city">Pune</span>
-        <span class="tag__count">drill capital</span>
-        <span class="tag__view">view the city</span>
-        <span class="tag__deva" aria-hidden="true">पुणे</span>
-      </a>
-      <a href="/city.html?city=Shillong" class="tag" data-city="shillong">
-        <span class="tag__city">Shillong</span>
-        <span class="tag__count">northeast nucleus</span>
-        <span class="tag__view">view the city</span>
-        <span class="tag__deva" aria-hidden="true">शिलांग</span>
-      </a>
-      <a href="/city.html?city=Chennai" class="tag" data-city="chennai">
-        <span class="tag__city">Chennai</span>
-        <span class="tag__count">tamil wave</span>
-        <span class="tag__view">view the city</span>
-        <span class="tag__deva" aria-hidden="true">சென்னை</span>
-      </a>
-      <a href="/city.html?city=Ahmedabad" class="tag" data-city="ahmedabad">
-        <span class="tag__city">Ahmedabad</span>
-        <span class="tag__count">gujju shawn carter</span>
-        <span class="tag__view">view the city</span>
-        <span class="tag__deva" aria-hidden="true">અમદાવાદ</span>
-      </a>
-      <a href="/city.html?city=Srinagar" class="tag" data-city="srinagar">
-        <span class="tag__city">Srinagar</span>
-        <span class="tag__count">kashmir conscience</span>
-        <span class="tag__view">view the city</span>
-        <span class="tag__deva" aria-hidden="true">श्रीनगर</span>
-      </a>
+    <div class="bento-cities" id="cityBento">
+      <p class="empty-grid" style="color: var(--ash);">loading the cities…</p>
     </div>
   </section>
 
@@ -224,54 +171,13 @@
     <a href="/beefs.html" class="see-all">open the full beef timeline →</a>
   </section>
 
-  <!-- labels / producers / cyphers discovery row -->
-  <section class="section" id="vault">
-    <div class="section__head">
+  <!-- the vault · dark compact grid -->
+  <section class="zone-dark" id="vault">
+    <div class="section__head" style="margin-bottom: 36px;">
       <h2 class="section__title">the <span class="burn">vault</span></h2>
-      <p class="section__meta">three doors deeper · labels · producers · cyphers</p>
+      <p class="section__meta">eight doors deeper · the back catalogue</p>
     </div>
-    <div class="cities" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
-      <a href="/labels.html" class="tag" data-city="mumbai">
-        <span class="tag__city">Labels</span>
-        <span class="tag__count">10 labels · the institutions</span>
-        <span class="tag__view">open the vault</span>
-      </a>
-      <a href="/producers.html" class="tag" data-city="delhi">
-        <span class="tag__city">Producers</span>
-        <span class="tag__count">6 boards · the unsung hands</span>
-        <span class="tag__view">credit the credits</span>
-      </a>
-      <a href="/cyphers.html" class="tag" data-city="punjab">
-        <span class="tag__city">Cyphers</span>
-        <span class="tag__count">4 ensemble tracks · scene snapshots</span>
-        <span class="tag__view">hear the room</span>
-      </a>
-      <a href="/slang.html" class="tag" data-city="bengaluru">
-        <span class="tag__city">Slang</span>
-        <span class="tag__count">19 terms · bantai · asli · gully</span>
-        <span class="tag__view">read the dictionary</span>
-      </a>
-      <a href="/timeline.html" class="tag" data-city="pune">
-        <span class="tag__city">Timeline</span>
-        <span class="tag__count">22 milestones · 1992 to 2026</span>
-        <span class="tag__view">walk the years</span>
-      </a>
-      <a href="/compare.html" class="tag" data-city="shillong">
-        <span class="tag__city">Compare</span>
-        <span class="tag__count">two contenders · stat-by-stat</span>
-        <span class="tag__view">settle the debate</span>
-      </a>
-      <a href="/mixtape.html" class="tag" data-city="chennai">
-        <span class="tag__city">Mixtape</span>
-        <span class="tag__count">10 slots · side A · your taste</span>
-        <span class="tag__view">load the tape</span>
-      </a>
-      <a href="/beefs.html" class="tag" data-city="srinagar">
-        <span class="tag__city">Beefs</span>
-        <span class="tag__count">3 verified · receipts attached</span>
-        <span class="tag__view">read the diss tracks</span>
-      </a>
-    </div>
+    <div class="vault-grid" id="vaultGrid"></div>
   </section>
 
   <!-- daily 1v1 -->
@@ -345,6 +251,6 @@
 
 </div>
 
-<script src="/app.js?v=20260521-5" defer></script>
+<script src="/app.js?v=20260521-6" defer></script>
 </body>
 </html>

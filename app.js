@@ -69,6 +69,11 @@
       ? artists.filter(a => !a.is_crossover)
       : artists;
   }
+  // HARDCORE-ONLY · used for the landing page front door. NEVER shows crossovers
+  // regardless of rank mode. Crossovers live in /leaderboard "crossover wing" + search.
+  function hardcorePool(artists) {
+    return artists.filter(a => !a.is_crossover);
+  }
 
   function initials(name) {
     return name.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -274,8 +279,8 @@
   async function initLanding() {
     await loadArtists();
 
-    // top 5 · computed from current rank mode (respect by default, crossovers buried)
-    const pool = defaultPool(ARTISTS);
+    // top 5 · HARDCORE ONLY · landing front door never shows crossovers
+    const pool = hardcorePool(ARTISTS);
     const total = totalVotes(pool);
     const top5 = [...pool].sort((a, b) => mockVotes(b) - mockVotes(a)).slice(0, 5);
     const tickets = $('#tickets');
@@ -346,21 +351,21 @@
         </div>`;
     }
 
-    // hero marquee · scrolling photos respecting current rank mode
+    // hero marquee · HARDCORE ONLY · cinematic photo strip · no crossovers, ever
     const marqueeWrap = $('#marquee');
     if (marqueeWrap) {
-      const top40 = [...defaultPool(ARTISTS)].sort((a, b) => mockVotes(b) - mockVotes(a)).slice(0, 40);
-      // double it so the loop is seamless
-      const doubled = top40.concat(top40);
+      const stripPool = hardcorePool(ARTISTS).filter(a => ['S','A','B'].includes(a.respect_tier || ''));
+      const ranked = [...stripPool].sort((a, b) => mockVotes(b) - mockVotes(a)).slice(0, 32);
+      const doubled = ranked.concat(ranked);
       marqueeWrap.innerHTML = `
         <div class="marquee__inner">
           ${doubled.map(a => `
             <a class="marquee__item" href="/artist.html?slug=${esc(a.slug)}">
               <span class="ph">${photoHtml(a)}</span>
-              <div>
-                <div class="nm">${esc(a.stage_name)}</div>
-                <div class="ct">${esc(lower(a.city_represented || ''))}</div>
-              </div>
+              <span class="marquee__caption">
+                <span class="nm">${esc(a.stage_name)}</span>
+                <span class="ct">${esc(lower(a.city_represented || ''))}</span>
+              </span>
             </a>`).join('')}
         </div>`;
     }
@@ -430,53 +435,124 @@
       });
     }
 
-    // feature showcase mockups · use real artists for credibility
+    // feature showcase mockups · dense, photo-driven, no empty paper
     renderFeatureMockups();
-    // wire scroll reveals after mockups are in DOM
     setTimeout(initScrollReveals, 50);
 
     function renderFeatureMockups() {
-      // pick 4 hardcore-S artists for the mockups (deterministic, same on every load)
-      const showcasePool = [...defaultPool(ARTISTS)]
-        .sort((a, b) => mockVotes(b) - mockVotes(a))
-        .slice(0, 5);
+      const hcRanked = [...hardcorePool(ARTISTS)].sort((a, b) => mockVotes(b) - mockVotes(a));
+      const top5 = hcRanked.slice(0, 5);
 
+      // Top 5 mockup · 5 rows fully populated, taller cards, with mock pct
       const m1 = $('#mockupTop5');
       if (m1) {
+        const total = totalVotes(hardcorePool(ARTISTS));
         m1.innerHTML = `
-          <div class="mockup-top5__hdr">top 5 · live</div>
-          ${showcasePool.slice(0, 5).map((a, i) => `
-            <div class="mockup-top5__row">
-              <span class="n">${String(i+1).padStart(2,'0')}</span>
-              <span class="ph">${photoHtml(a)}</span>
-              <span>
-                <div class="nm">${esc(a.stage_name)}</div>
-                <div class="ct">${esc(lower(a.city_represented || ''))}</div>
-              </span>
-            </div>`).join('')}`;
+          <div class="mockup-top5__hdr">
+            <span>top 5 · live</span>
+            <span class="mockup-top5__hdr-side">pen game</span>
+          </div>
+          ${top5.map((a, i) => {
+            const pct = pctOf(a, total).toFixed(1);
+            return `
+              <div class="mockup-top5__row">
+                <span class="n">${String(i+1).padStart(2,'0')}</span>
+                <span class="ph">${photoHtml(a)}</span>
+                <span class="mockup-top5__body">
+                  <span class="nm">${esc(a.stage_name)}</span>
+                  <span class="ct">${esc(lower(a.city_represented || ''))}</span>
+                </span>
+                <span class="mockup-top5__pct">${pct}%</span>
+              </div>`;
+          }).join('')}
+          <div class="mockup-top5__foot">drag · tap · reorder · defend · lock</div>`;
       }
 
+      // Tier mockup · 5 rows FULLY populated with 6 photos each, plus rank context
       const m2 = $('#mockupTier');
       if (m2) {
-        // pick 3-4 per tier for the mockup
-        const byTier = (t) => ARTISTS.filter(a => a.respect_tier === t && !a.is_crossover).slice(0, 4);
-        m2.innerHTML = ['S','A','B','C','D'].map(t => `
-          <div class="mockup-tier__row" data-tier="${t}">
-            <div class="lt">${t}</div>
-            <div class="rs">
-              ${byTier(t).map(a => `<div class="dot">${photoHtml(a)}</div>`).join('')}
-            </div>
-          </div>`).join('');
+        const byTier = (t) => ARTISTS.filter(a => a.respect_tier === t && !a.is_crossover);
+        m2.innerHTML = ['S','A','B','C','D'].map(t => {
+          const arts = byTier(t).slice(0, 6);
+          return `
+            <div class="mockup-tier__row" data-tier="${t}">
+              <div class="lt">${t}</div>
+              <div class="rs">
+                ${arts.map(a => `<div class="dot">${photoHtml(a)}</div>`).join('')}
+              </div>
+            </div>`;
+        }).join('') + `<div class="mockup-tier__foot">EXPORT AS PNG · 1080×1350</div>`;
       }
 
+      // Share mockup · build a mini share card preview that fills the space
       const m3 = $('#mockupShareBody');
       if (m3) {
-        m3.innerHTML = showcasePool.slice(0, 5).map((a, i) => `
+        m3.innerHTML = top5.map((a, i) => `
           <div class="row">
-            <span>${String(i+1).padStart(2,'0')}</span>
-            <span>${esc(a.stage_name)}</span>
+            <span class="num">${String(i+1).padStart(2,'0')}</span>
+            <span class="ph-sm">${photoHtml(a)}</span>
+            <span class="nm">${esc(a.stage_name)}</span>
           </div>`).join('');
       }
+    }
+
+    // city bento · render dynamically with photo thumbs · no rotation, no stripes
+    renderCityBento();
+    function renderCityBento() {
+      const bento = $('#cityBento');
+      if (!bento) return;
+      const NE = ['Meghalaya','Assam','Manipur','Mizoram','Nagaland','Tripura','Arunachal Pradesh','Sikkim'];
+      const groups = {
+        Mumbai: { artists: ARTISTS.filter(a => a.city_represented === 'Mumbai' && !a.is_crossover), tag: 'gully wave', sub: 'dharavi · kurla · andheri · mira road', size: 'big' },
+        Delhi: { artists: ARTISTS.filter(a => a.state === 'Delhi NCR' && !a.is_crossover), tag: 'lyrical wave', sub: 'the conscious heartbeat', size: 'med' },
+        Punjab: { artists: ARTISTS.filter(a => a.state === 'Punjab' && !a.is_crossover), tag: 'parallel kingdom', sub: 'wazir · sikander · big boi · jelo', size: 'med' },
+        Bengaluru: { artists: ARTISTS.filter(a => a.city_represented === 'Bengaluru' && !a.is_crossover), tag: 'global lane', sub: 'hanumankind broke through', size: 'sm' },
+        Pune: { artists: ARTISTS.filter(a => a.city_represented === 'Pune' && !a.is_crossover), tag: 'drill capital', sub: 'mc stan to vijay dk', size: 'sm' },
+        Northeast: { artists: ARTISTS.filter(a => NE.includes(a.state) && !a.is_crossover), tag: 'northeast nucleus', sub: 'eight states. 18 artists.', size: 'sm', href: '/city.html?city=Northeast' },
+        Chennai: { artists: ARTISTS.filter(a => a.city_represented === 'Chennai' && !a.is_crossover), tag: 'tamil wave', sub: 'paal dabba global', size: 'xs' },
+        Ahmedabad: { artists: ARTISTS.filter(a => a.city_represented === 'Ahmedabad' && !a.is_crossover), tag: 'gujarati pen', sub: 'dhanji solo', size: 'xs' },
+        Srinagar: { artists: ARTISTS.filter(a => a.city_represented === 'Srinagar' && !a.is_crossover), tag: 'kashmir conscience', sub: 'ahmer alone, loud', size: 'xs' }
+      };
+      bento.innerHTML = Object.entries(groups).map(([city, g]) => {
+        const photoStack = g.artists.slice(0, 4).map(a => `<span class="bento-city__photo">${photoHtml(a)}</span>`).join('');
+        const href = g.href || `/city.html?city=${esc(city)}`;
+        return `
+          <a class="bento-city bento-city--${g.size}" data-city="${esc(lower(city))}" href="${href}">
+            <div class="bento-city__top">
+              <span class="bento-city__count">${g.artists.length} artists</span>
+              <span class="bento-city__tag">${esc(g.tag)}</span>
+            </div>
+            <h3 class="bento-city__name">${esc(city)}</h3>
+            <p class="bento-city__sub">${esc(g.sub)}</p>
+            <div class="bento-city__photos">${photoStack}</div>
+            <div class="bento-city__cta">view the roster →</div>
+          </a>`;
+      }).join('');
+    }
+
+    // vault · dark compact grid · no rotation
+    renderVault();
+    function renderVault() {
+      const wrap = $('#vaultGrid');
+      if (!wrap) return;
+      const items = [
+        { href: '/labels.html', n: '01', t: 'LABELS', sub: 'the institutions', stat: '10 labels' },
+        { href: '/producers.html', n: '02', t: 'PRODUCERS', sub: 'the unsung hands', stat: '6 boards' },
+        { href: '/cyphers.html', n: '03', t: 'CYPHERS', sub: 'scene snapshots', stat: '4 tracks' },
+        { href: '/slang.html', n: '04', t: 'SLANG', sub: 'the dictionary', stat: '19 terms' },
+        { href: '/timeline.html', n: '05', t: 'TIMELINE', sub: '1992 to 2026', stat: '22 milestones' },
+        { href: '/compare.html', n: '06', t: 'COMPARE', sub: 'stat-by-stat', stat: 'two artists' },
+        { href: '/mixtape.html', n: '07', t: 'MIXTAPE', sub: 'side A · your taste', stat: '10 slots' },
+        { href: '/beefs.html', n: '08', t: 'BEEFS', sub: 'receipts attached', stat: '3 verified' }
+      ];
+      wrap.innerHTML = items.map(i => `
+        <a class="vault-item" href="${i.href}">
+          <span class="vault-item__n">${i.n}</span>
+          <h3 class="vault-item__t">${i.t}</h3>
+          <p class="vault-item__sub">${i.sub}</p>
+          <span class="vault-item__stat">${i.stat}</span>
+          <span class="vault-item__cta">open →</span>
+        </a>`).join('');
     }
 
     // dynamic city counts on landing tiles
