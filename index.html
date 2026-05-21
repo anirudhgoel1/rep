@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Rep · the real DHH top 5</title>
+  <meta name="description" content="Build your DHH top 5. Tier the scene. Vote on India's live top 50. City pride, defend wall, daily 1v1, beef timeline, slang dictionary. Ranked by you. Arguments encouraged.">
+  <meta name="theme-color" content="#F4EFE6">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://rep.anirudhgoel.xyz/">
+  <meta property="og:title" content="Rep · the real DHH top 5">
+  <meta property="og:description" content="Build your DHH top 5. Tier the scene. Vote on India's live top 50.">
+  <meta property="og:image" content="https://rep.anirudhgoel.xyz/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Rep · the real DHH top 5">
+  <meta name="twitter:description" content="Build your DHH top 5. Tier the scene. Vote on India's live top 50.">
+  <meta name="twitter:image" content="https://rep.anirudhgoel.xyz/og.png">
+
+  <link rel="canonical" href="https://rep.anirudhgoel.xyz/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Serif:ital,wght@1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Devanagari:wght@400;700&display=swap">
+
+  <link rel="stylesheet" href="/styles.css?v=20260521-3">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Rep",
+    "url": "https://rep.anirudhgoel.xyz/",
+    "applicationCategory": "EntertainmentApplication",
+    "description": "Build your DHH top 5. Tier the scene. Vote on India's live top 50.",
+    "creator": { "@type": "Person", "name": "Anirudh Goel" }
+  }
+  </script>
+</head>
+<body>
+
+<div class="tape" aria-hidden="true">
+  <div class="tape__inner">rep your city · rep your hood · rep your favourite · ranked by you · arguments encouraged · rep your city · rep your hood · rep your favourite · ranked by you · arguments encouraged</div>
+</div>
+
+<div class="shell">
+
+  <header class="topbar" id="topbar"></header>
+
+  <!-- hero -->
+  <section class="hero">
+    <div class="hero__deva" aria-hidden="true">रेप</div>
+    <p class="hero__kicker">desi hip hop · ranked by the gully</p>
+    <div class="hero__lockup">
+      <h1 class="hero__rep">REP<span class="tilt">.</span></h1>
+    </div>
+    <p class="hero__sub">the real <span class="kw">DHH top 5</span>. ranked by you. arguments encouraged.</p>
+    <p class="hero__hook">85 artists across 10 cities. spotify embeds you can play. drop your five, tier the scene, defend your number one, settle the daily 1v1. no signup. no fluff. just bars, beef, and opinions.</p>
+    <div class="hero__cta">
+      <a href="/build.html" class="btn-stamp">drop your top 5</a>
+      <a href="/leaderboard.html" class="btn-ghost">india's top 85 →</a>
+      <button class="dice-btn" id="diceBtn">random rapper</button>
+    </div>
+    <div class="saved-hint" id="savedHint" style="display:none;">
+      <span class="text">your last top 5 is saved.</span>
+      <a href="/build.html">edit it →</a>
+    </div>
+  </section>
+
+  <!-- marquee · scrolling photo strip of top 40 -->
+  <div class="marquee" id="marquee" aria-hidden="true"></div>
+
+  <!-- artist of the day -->
+  <section class="bar-of-day" id="artistOfDay" aria-label="artist of the day">
+    <div class="bar-of-day__kicker">artist of the day · loading…</div>
+  </section>
+
+  <!-- live ticker -->
+  <section class="section" id="leaderboard">
+    <div class="section__head">
+      <h2 class="section__title">india <span class="burn">right now</span></h2>
+      <p class="section__meta"><span class="live">simulating live · real-time votes wire next</span></p>
+    </div>
+    <ol class="tickets" id="tickets">
+      <li class="ticket"><span class="ticket__rank">--</span><span class="ticket__body"><span class="ticket__name">loading roster…</span><span class="ticket__city">one moment</span></span></li>
+    </ol>
+    <a href="/leaderboard.html" class="see-all">open the full top 85</a>
+  </section>
+
+  <!-- cities -->
+  <section class="section" id="cities">
+    <div class="section__head">
+      <h2 class="section__title">rep your <span class="burn">city</span></h2>
+      <p class="section__meta">85 artists · 10 cities · one accent each</p>
+    </div>
+    <div class="cities">
+      <a href="/city.html?city=Mumbai" class="tag" data-city="mumbai">
+        <span class="tag__city">Mumbai</span>
+        <span class="tag__count">gully wave</span>
+        <span class="tag__view">view the city</span>
+        <span class="tag__deva" aria-hidden="true">मुंबई</span>
+      </a>
+      <a href="/city.html?city=Delhi" class="tag" data-city="delhi">
+        <span class="tag__city">Delhi</span>
+        <span class="tag__count">lyrical wave</span>
+        <span class="tag__view">view the city</span>
+        <span class="tag__deva" aria-hidden="true">दिल्ली</span>
+      </a>
+      <a href="/city.html?city=Punjab" class="tag" data-city="punjab">
+        <span class="tag__city">Punjab</span>
+        <span class="tag__count">the parallel kingdom</span>
+        <span class="tag__view">view the city</span>
+        <span class="tag__deva" aria-hidden="true">ਪੰਜਾਬ</span>
+      </a>
+      <a href="/city.html?city=Bengaluru" class="tag" data-city="bengaluru">
+        <span class="tag__city">Bengaluru</span>
+        <span class="tag__count">the global lane</span>
+        <span class="tag__view">view the city</span>
+        <span class="tag__deva" aria-hidden="true">ಬೆಂಗಳೂರು</span>
+      </a>
+      <a href="/city.html?city=Pune" class="tag" data-city="pune">
+        <span class="tag__city">Pune</span>
+        <span class="tag__count">drill capital</span>
+        <span class="tag__view">view the city</span>
+        <span class="tag__deva" aria-hidden="true">पुणे</span>
+      </a>
+      <a href="/city.html?city=Shillong" class="tag" data-city="shillong">
+        <span class="tag__city">Shillong</span>
+        <span class="tag__count">northeast nucleus</span>
+        <span class="tag__view">view the city</span>
+        <span class="tag__deva" aria-hidden="true">शिलांग</span>
+      </a>
+      <a href="/city.html?city=Chennai" class="tag" data-city="chennai">
+        <span class="tag__city">Chennai</span>
+        <span class="tag__count">tamil wave</span>
+        <span class="tag__view">view the city</span>
+        <span class="tag__deva" aria-hidden="true">சென்னை</span>
+      </a>
+      <a href="/city.html?city=Ahmedabad" class="tag" data-city="ahmedabad">
+        <span class="tag__city">Ahmedabad</span>
+        <span class="tag__count">gujju shawn carter</span>
+        <span class="tag__view">view the city</span>
+        <span class="tag__deva" aria-hidden="true">અમદાવાદ</span>
+      </a>
+      <a href="/city.html?city=Srinagar" class="tag" data-city="srinagar">
+        <span class="tag__city">Srinagar</span>
+        <span class="tag__count">kashmir conscience</span>
+        <span class="tag__view">view the city</span>
+        <span class="tag__deva" aria-hidden="true">श्रीनगर</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- beefs preview -->
+  <section class="section" id="beefs">
+    <div class="section__head">
+      <h2 class="section__title">the <span class="burn">beefs</span></h2>
+      <p class="section__meta">four eras · verified diss tracks · receipts</p>
+    </div>
+    <div class="beefs" id="beefPreview">
+      <p class="empty-grid">loading the receipts…</p>
+    </div>
+    <a href="/beefs.html" class="see-all">open the full beef timeline →</a>
+  </section>
+
+  <!-- labels / producers / cyphers discovery row -->
+  <section class="section" id="vault">
+    <div class="section__head">
+      <h2 class="section__title">the <span class="burn">vault</span></h2>
+      <p class="section__meta">three doors deeper · labels · producers · cyphers</p>
+    </div>
+    <div class="cities" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
+      <a href="/labels.html" class="tag" data-city="mumbai">
+        <span class="tag__city">Labels</span>
+        <span class="tag__count">10 labels · the institutions</span>
+        <span class="tag__view">open the vault</span>
+      </a>
+      <a href="/producers.html" class="tag" data-city="delhi">
+        <span class="tag__city">Producers</span>
+        <span class="tag__count">6 boards · the unsung hands</span>
+        <span class="tag__view">credit the credits</span>
+      </a>
+      <a href="/cyphers.html" class="tag" data-city="punjab">
+        <span class="tag__city">Cyphers</span>
+        <span class="tag__count">4 ensemble tracks · scene snapshots</span>
+        <span class="tag__view">hear the room</span>
+      </a>
+      <a href="/slang.html" class="tag" data-city="bengaluru">
+        <span class="tag__city">Slang</span>
+        <span class="tag__count">19 terms · bantai · asli · gully</span>
+        <span class="tag__view">read the dictionary</span>
+      </a>
+      <a href="/timeline.html" class="tag" data-city="pune">
+        <span class="tag__city">Timeline</span>
+        <span class="tag__count">22 milestones · 1992 to 2026</span>
+        <span class="tag__view">walk the years</span>
+      </a>
+      <a href="/compare.html" class="tag" data-city="shillong">
+        <span class="tag__city">Compare</span>
+        <span class="tag__count">two contenders · stat-by-stat</span>
+        <span class="tag__view">settle the debate</span>
+      </a>
+      <a href="/mixtape.html" class="tag" data-city="chennai">
+        <span class="tag__city">Mixtape</span>
+        <span class="tag__count">10 slots · side A · your taste</span>
+        <span class="tag__view">load the tape</span>
+      </a>
+      <a href="/beefs.html" class="tag" data-city="srinagar">
+        <span class="tag__city">Beefs</span>
+        <span class="tag__count">3 verified · receipts attached</span>
+        <span class="tag__view">read the diss tracks</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- daily 1v1 -->
+  <section class="section" id="daily">
+    <div class="section__head">
+      <h2 class="section__title">today <span class="burn">·</span> 1v1</h2>
+      <p class="section__meta">south meets west · drill kings</p>
+    </div>
+    <div class="duel">
+      <div class="duel__side">
+        <div class="duel__photo">HK</div>
+        <div class="duel__name">Hanumankind</div>
+        <div class="duel__city">bengaluru</div>
+      </div>
+      <div class="duel__vs">vs</div>
+      <div class="duel__side">
+        <div class="duel__photo">MS</div>
+        <div class="duel__name">MC Stan</div>
+        <div class="duel__city">pune</div>
+      </div>
+    </div>
+    <p class="duel__theme">opens with leaderboard. one tap to vote. fresh matchup every day, when the backend ships.</p>
+  </section>
+
+  <!-- defend wall preview · example takes, real wall ships next -->
+  <section class="section" id="defend">
+    <div class="section__head">
+      <h2 class="section__title">defend <span class="burn">your #1</span></h2>
+      <p class="section__meta">how the format will look · real submissions open with the backend</p>
+    </div>
+    <p style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--mute); margin-bottom: 28px; max-width: 720px;">
+      one line per pick. 140 character max. handle optional. upvote what reads true.
+      below are example takes in the format · the wall opens for real submissions when the backend ships.
+    </p>
+    <div class="defend-list">
+      <figure class="quote">
+        <p class="quote__text">three-part loop. the first time you hear lunch break, you check the duration twice.</p>
+        <figcaption class="quote__meta">
+          <span class="defending">defending seedhe maut</span>
+          <span>example take</span>
+        </figcaption>
+      </figure>
+      <figure class="quote">
+        <p class="quote__text">if hanumankind didn't break out globally, the world would still owe india an apology.</p>
+        <figcaption class="quote__meta">
+          <span class="defending">defending hanumankind</span>
+          <span>example take</span>
+        </figcaption>
+      </figure>
+      <figure class="quote">
+        <p class="quote__text">karan aujla makes radio with a pen game that doesn't need radio.</p>
+        <figcaption class="quote__meta">
+          <span class="defending">defending karan aujla</span>
+          <span>example take</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- footer -->
+  <footer class="foot">
+    <div class="foot__row">
+      <span class="foot__mark">rep<span class="dot"></span></span>
+      <span class="foot__line">85 artists. 10 cities deep. one paper, one accent, no dark mode.</span>
+    </div>
+    <div class="foot__row">
+      <span class="foot__tip">built with respect. <a href="upi://pay?pa=7814769892@yescred&pn=Anirudh%20Goel&cu=INR" id="upiLink">tip via upi →</a></span>
+      <span class="foot__creds">© 2026 · made by <a href="https://anirudhgoel.xyz">anirudh goel</a> · cluster member</span>
+    </div>
+  </footer>
+
+</div>
+
+<script src="/app.js?v=20260521-3" defer></script>
+</body>
+</html>

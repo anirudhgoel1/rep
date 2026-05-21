@@ -1,0 +1,62 @@
+{
+  "_meta": {
+    "version": "v1",
+    "principle": "Producers who shape DHH equally with the rappers. Verified credits via Wikipedia, label sites, Genius credits."
+  },
+  "producers": [
+    {
+      "slug": "sez-on-the-beat",
+      "name": "Sez on the Beat",
+      "real_name": "Sajeel Kapoor",
+      "city": "Delhi",
+      "blurb": "The Delhi producer who scored the conscious wave. Class-Sikh (Prabh Deep), Little Kid Big Dreams (Ahmer), early Divine and Naezy tracks. Sample-based, jazz-influenced, the most patient ear in DHH.",
+      "credits_for_slugs": ["prabh-deep", "ahmer", "divine", "naezy", "seedhe-maut"],
+      "tracks": ["Class-Sikh (album)", "Little Kid Big Dreams (album)", "Mere Gully Mein (production credit)"]
+    },
+    {
+      "slug": "karan-kanchan",
+      "name": "Karan Kanchan",
+      "real_name": "Karan Kanchan",
+      "city": "Mumbai",
+      "blurb": "Trap with Indian textures. Produced for Divine, Raja Kumari, Naezy, and his own catalogue. The Mumbai bridge between gully and global trap.",
+      "credits_for_slugs": ["divine", "naezy", "raja-kumari"],
+      "tracks": ["Aaya Re (Divine)", "Mute (Raja Kumari)"]
+    },
+    {
+      "slug": "stunnah-beatz",
+      "name": "Stunnah Beatz",
+      "real_name": "Vivek Marwah",
+      "city": "Mumbai",
+      "blurb": "KR$NA's primary collaborator. Produced No Cap, Untitled, Joota Japani. The pen-game wave needed a producer who could match the lyric density.",
+      "credits_for_slugs": ["krsna", "raftaar"],
+      "tracks": ["No Cap (KR$NA)", "Joota Japani (KR$NA)"]
+    },
+    {
+      "slug": "kalmi",
+      "name": "Kalmi",
+      "real_name": "Andre Yusuf Anantha",
+      "city": "Delhi",
+      "blurb": "Seedhe Maut's primary in-house producer. The texture under Lunch Break, NAYAAB, Shaktimaan. Atmospheric boom-bap with melodic threads.",
+      "credits_for_slugs": ["seedhe-maut", "yashraj"],
+      "tracks": ["Shaktimaan (Seedhe Maut)", "Lunch Break (album, production)"]
+    },
+    {
+      "slug": "kushagra",
+      "name": "Kushagra",
+      "real_name": "Kushagra",
+      "city": "Delhi",
+      "blurb": "Yashraj and the new wave's preferred producer. Soft on the ear, hard on the construction. Bombay Coast, Ishq Nachaawe all carry his fingerprint.",
+      "credits_for_slugs": ["yashraj"],
+      "tracks": ["Ishq Nachaawe (Yashraj)", "Bombay Coast (Yashraj)"]
+    },
+    {
+      "slug": "krazyfoolish",
+      "name": "KRAZY",
+      "real_name": "Mehakdeep Singh",
+      "city": "Punjab",
+      "blurb": "The Punjabi wave's quiet engine. Beats for Karan Aujla and rotating Punjabi A-listers. Drill plus traditional dhol — the modern Punjabi sound.",
+      "credits_for_slugs": ["karan-aujla"],
+      "tracks": ["Tauba Tauba (production credits)", "Karan Aujla catalogue"]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+name = "rep"
+compatibility_date = "2026-05-20"
+workers_dev = true
+preview_urls = true
+
+[assets]
+directory = "./"
+not_found_handling = "404-page"
+
+[[routes]]
+pattern = "rep.anirudhgoel.xyz"
+custom_domain = true
+
+[observability]
+enabled = true

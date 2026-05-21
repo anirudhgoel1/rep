@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "version": "v1",
+    "principle": "Notable DHH cyphers — multi-artist tracks that became defining ensemble pieces."
+  },
+  "cyphers": [
+    {
+      "slug": "northeast-cypher-2020",
+      "title": "Northeast Cypher 2020",
+      "year": 2020,
+      "blurb": "The cypher that finally put NE rap on the national radar. Khasi Bloodz, Sikdar, Kabir, Freakyy and others on one track. 659K streams on Spotify and counting.",
+      "artist_slugs": ["khasi-bloodz", "sikdar", "kabir-shillong", "freakyy", "moksh-meghalaya"],
+      "spotify_track": "04C8GYy2FDcu9I14fdkGX8"
+    },
+    {
+      "slug": "gully-gang-cypher",
+      "title": "Gully Gang Cyphers",
+      "year": 2020,
+      "blurb": "Multi-track series of Gully Gang ensemble cyphers. Divine, MC Altaf, D'Evil, Shah Rule, Aavrutti all trading bars. The clearest snapshot of the Mumbai sound circa post-Gully Boy.",
+      "artist_slugs": ["divine", "mc-altaf", "devil", "shah-rule", "aavrutti"],
+      "spotify_track": null
+    },
+    {
+      "slug": "bantai-cypher",
+      "title": "Bantai Records Cyphers",
+      "year": 2021,
+      "blurb": "Emiway's annual cypher series. Emiway, Shez, Young Galib trading verses. Designed as the calling card for the independent path.",
+      "artist_slugs": ["emiway-bantai", "shez", "young-galib"],
+      "spotify_track": null
+    },
+    {
+      "slug": "mass-appeal-india-cypher",
+      "title": "Mass Appeal India Cyphers",
+      "year": 2022,
+      "blurb": "The label-curated annual showcases. Multi-artist tracks featuring rotating roster + invited heads. Built to position the label as the home of Indian hip-hop journalism plus music.",
+      "artist_slugs": ["talwiinder", "yelhomie", "raja-kumari"],
+      "spotify_track": null
+    }
+  ]
+}

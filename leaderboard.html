@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Top 85 · Rep</title>
+  <meta name="description" content="India's full DHH leaderboard. 85 artists ranked. Filter by era, subgenre, or surface the underrated.">
+  <meta name="theme-color" content="#F4EFE6">
+  <link rel="canonical" href="https://rep.anirudhgoel.xyz/leaderboard.html">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Serif:ital,wght@1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Devanagari:wght@400;700&display=swap">
+  <link rel="stylesheet" href="/styles.css?v=20260521-3">
+</head>
+<body data-page="leaderboard">
+<div class="tape" aria-hidden="true"><div class="tape__inner">india top 85 · era cuts · subgenre cuts · underrated 50 · all live · all argueable</div></div>
+<div class="shell">
+  <header class="topbar" id="topbar"></header>
+
+  <section class="hero" style="padding: 56px 0 24px;">
+    <p class="hero__kicker">live · the leaderboard · simulated for now · real votes when backend ships</p>
+    <h1 class="hero__rep" style="font-size: clamp(80px, 14vw, 160px);">TOP <span class="tilt">85</span></h1>
+    <p class="hero__sub" style="font-size: clamp(20px, 2.2vw, 28px);">india's full DHH order. cut by <span class="kw">era</span> or by <span class="kw">subgenre</span>.</p>
+    <p class="hero__hook"><span id="lbTotal">calculating votes…</span> · click any artist to open their profile</p>
+  </section>
+
+  <nav class="subnav" aria-label="scope">
+    <a href="#" data-scope="all" class="scope-tab is-active">all india</a>
+    <a href="#" data-scope="era:Gully Wave" class="scope-tab">gully wave</a>
+    <a href="#" data-scope="era:Conscious Wave" class="scope-tab">conscious wave</a>
+    <a href="#" data-scope="era:Punjabi Wave" class="scope-tab">punjabi wave</a>
+    <a href="#" data-scope="era:New Wave" class="scope-tab">new wave</a>
+    <a href="#" data-scope="era:OG" class="scope-tab">OG</a>
+    <a href="#" data-scope="sub:Gully Rap" class="scope-tab">gully rap</a>
+    <a href="#" data-scope="sub:Punjabi Rap" class="scope-tab">punjabi rap</a>
+    <a href="#" data-scope="sub:Boom Bap / Lo-fi" class="scope-tab">boom bap</a>
+    <a href="#" data-scope="sub:Trap" class="scope-tab">trap</a>
+    <a href="#" data-scope="sub:Regional-Language" class="scope-tab">regional</a>
+    <a href="#" data-scope="underrated" class="scope-tab">underrated 50</a>
+  </nav>
+
+  <div class="lb-list" id="lbList" style="margin-top: 24px;"></div>
+
+  <footer class="foot">
+    <div class="foot__row">
+      <span class="foot__mark">rep<span class="dot"></span></span>
+      <span class="foot__line">simulated rankings are deterministic by popularity tier + slug hash · once /api/leaderboard ships, this swaps to real votes</span>
+    </div>
+    <div class="foot__row">
+      <span class="foot__tip">built with respect. <a href="upi://pay?pa=7814769892@yescred&pn=Anirudh%20Goel&cu=INR" id="upiLink">tip via upi →</a></span>
+      <span class="foot__creds">© 2026 · made by <a href="https://anirudhgoel.xyz">anirudh goel</a></span>
+    </div>
+  </footer>
+
+</div>
+<script src="/app.js?v=20260521-3" defer></script>
+</body>
+</html>

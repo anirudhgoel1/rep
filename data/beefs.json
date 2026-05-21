@@ -1,0 +1,55 @@
+{
+  "_meta": {
+    "version": "v1",
+    "compiled_at": "2026-05-20",
+    "principle": "Only well-documented public beefs with released diss tracks or label-confirmed splits. Cross-checked against multiple sources.",
+    "count": 3,
+    "principle": "Only beefs with ironclad sources — public diss tracks or label-confirmed splits. Anything murky gets parked in the 'pending' note rather than risking misinformation. DHH fans will roast inaccuracies."
+  },
+  "beefs": [
+    {
+      "slug": "emiway-vs-raftaar-2017",
+      "title": "EMIWAY vs RAFTAAR",
+      "year": 2017,
+      "actor_a": "emiway-bantai",
+      "actor_b": "raftaar",
+      "status": "settled",
+      "summary": "The beef that put gully on Raftaar's radar. Emiway dropped Samajh Mein Aaya Kya questioning the mainstream's gatekeeping. Raftaar fired back with Sheikh Chilli. Public for weeks, ended without reconciliation but no further escalations.",
+      "tracks": [
+        { "by": "emiway-bantai", "title": "Samajh Mein Aaya Kya", "year": 2017, "role": "opener" },
+        { "by": "raftaar", "title": "Sheikh Chilli", "year": 2017, "role": "response" }
+      ],
+      "verdict": "community split · half called it for Emiway on hunger, half for Raftaar on technique"
+    },
+    {
+      "slug": "krsna-vs-emiway-2021",
+      "title": "KR$NA vs EMIWAY",
+      "year": 2021,
+      "actor_a": "krsna",
+      "actor_b": "emiway-bantai",
+      "status": "settled",
+      "summary": "The most-streamed DHH beef ever. KR$NA dropped Untitled and Hool with subliminals. Emiway responded F.U. (Free Underground). KR$NA closed with No Cap which racked tens of millions of views and is widely seen as the technical knockout. Settled publicly years later.",
+      "tracks": [
+        { "by": "krsna", "title": "Untitled", "year": 2021, "role": "opener" },
+        { "by": "emiway-bantai", "title": "F.U.", "year": 2021, "role": "response" },
+        { "by": "krsna", "title": "No Cap", "year": 2021, "role": "closer" }
+      ],
+      "verdict": "KR$NA on pen game, Emiway on resilience"
+    },
+    {
+      "slug": "mafia-mundeer-split-2013",
+      "title": "HONEY SINGH vs RAFTAAR vs BADSHAH vs IKKA",
+      "year": 2013,
+      "actor_a": "yo-yo-honey-singh",
+      "actor_b": "raftaar",
+      "status": "settled",
+      "summary": "The Mafia Mundeer collective imploded. Raftaar, Badshah, Ikka, Lil Golu all split from Honey Singh's camp citing creative and credit disputes. Multiple subliminals followed over the next two years. By 2018 most parties had moved on, though the original lineup never reunited.",
+      "tracks": [
+        { "by": "raftaar", "title": "Wakhra Swag", "year": 2015, "role": "post-split assertion" },
+        { "by": "badshah", "title": "DJ Waley Babu", "year": 2015, "role": "post-split breakout" }
+      ],
+      "verdict": "the whole roster won · DHH mainstream owes them everything"
+    }
+  ],
+  "pending": "More beefs are being researched (Sidhu vs Karan Aujla camps, MC Stan vs Emiway era tension, Divine subliminals on Punya Paap). Only ironclad-sourced beefs with public diss tracks make this page. If you have receipts for an unlisted beef, the suggestions backend is shipping next."
+}

@@ -1,0 +1,108 @@
+{
+  "_meta": {
+    "version": "v1",
+    "principle": "Major DHH labels with verified rosters. Cross-checked against label sites + Wikipedia."
+  },
+  "labels": [
+    {
+      "slug": "gully-gang",
+      "name": "Gully Gang",
+      "city": "Mumbai",
+      "founded": 2018,
+      "founder": "Divine",
+      "blurb": "The Mumbai gully wave's home base. Founded by Divine off the back of Mere Gully Mein. Roster reads like a Dharavi-to-Andheri map.",
+      "roster_slugs": ["divine", "mc-altaf", "shah-rule", "devil", "aavrutti", "tsumyoki"],
+      "accent": "mumbai"
+    },
+    {
+      "slug": "azadi-records",
+      "name": "Azadi Records",
+      "city": "Delhi",
+      "founded": 2015,
+      "founder": "Mo Joshi + Uday Kapur",
+      "blurb": "The conscious wave's institutional spine. Prabh Deep's Class-Sikh put them on the map. Seedhe Maut left for DL91 in 2023. Still home base for political DHH.",
+      "roster_slugs": ["prabh-deep", "ahmer", "kim-the-beloved", "jelo"],
+      "accent": "delhi"
+    },
+    {
+      "slug": "dl91",
+      "name": "DL91 (Era)",
+      "city": "Delhi",
+      "founded": 2023,
+      "founder": "Seedhe Maut (Encore ABJ + Calm)",
+      "blurb": "Independence move. After NAYAAB and BAYAAN broke the duo out, they split from Azadi and built DL91 to put out Lunch Break and beyond on their own terms.",
+      "roster_slugs": ["seedhe-maut"],
+      "accent": "delhi"
+    },
+    {
+      "slug": "mass-appeal-india",
+      "name": "Mass Appeal India",
+      "city": "Mumbai",
+      "founded": 2019,
+      "founder": "Nas + Universal Music India joint venture",
+      "blurb": "The major-label gateway. Brought Talwiinder, Yelhomie. Hanumankind operated adjacent. The label that lets DHH cross over without losing the gully.",
+      "roster_slugs": ["talwiinder", "yelhomie", "raja-kumari", "ikka"],
+      "accent": "delhi"
+    },
+    {
+      "slug": "kalamkaar",
+      "name": "Kalamkaar",
+      "city": "Delhi",
+      "founded": 2019,
+      "founder": "Raftaar",
+      "blurb": "Raftaar's home for the pen-game roster. KR$NA's catalogue lives here; Karma and Ikka pass through.",
+      "roster_slugs": ["raftaar", "krsna", "karma", "ikka"],
+      "accent": "delhi"
+    },
+    {
+      "slug": "bantai-records",
+      "name": "Bantai Records",
+      "city": "Mumbai",
+      "founded": 2018,
+      "founder": "Emiway Bantai",
+      "blurb": "Emiway's empire. Built off Machayenge. Shez, Young Galib graduated from here. The independent answer to the major labels.",
+      "roster_slugs": ["emiway-bantai", "shez", "young-galib"],
+      "accent": "mumbai"
+    },
+    {
+      "slug": "def-jam-india",
+      "name": "Def Jam India",
+      "city": "Mumbai",
+      "founded": 2019,
+      "founder": "Universal Music India (Def Jam brand)",
+      "blurb": "The American import with Indian roots. Raga, Dino James, Fotty Seven are flagship. Hanumankind's global breakout went through their parent network.",
+      "roster_slugs": ["raga", "dino-james", "fotty-seven", "hanumankind"],
+      "accent": "mumbai"
+    },
+    {
+      "slug": "5911-records",
+      "name": "5911 Records",
+      "city": "Mansa, Punjab",
+      "founded": 2020,
+      "founder": "Sidhu Moose Wala",
+      "blurb": "Sidhu's independent label. So High, 295, The Last Ride all came through it. The blueprint for Punjabi rap independence.",
+      "roster_slugs": ["sidhu-moose-wala"],
+      "accent": "punjab"
+    },
+    {
+      "slug": "run-up-records",
+      "name": "Run-Up Records",
+      "city": "Vancouver / Punjab",
+      "founded": 2020,
+      "founder": "AP Dhillon",
+      "blurb": "The diaspora label. AP Dhillon + Gurinder Gill built it for Brown Munde and never looked back. Republic Records distribution makes them stadium-ready.",
+      "roster_slugs": ["ap-dhillon", "gurinder-gill"],
+      "accent": "punjab"
+    },
+    {
+      "slug": "warner-music-india",
+      "name": "Warner Music India / 91 North",
+      "city": "Multi-city",
+      "founded": 2020,
+      "founder": "Warner Music Group · 91 North sub-label",
+      "blurb": "The Punjabi crossover engine. Karan Aujla, Channi Nattan, King all sit under variants of the Warner umbrella in India.",
+      "roster_slugs": ["karan-aujla", "channi-nattan", "king"],
+      "accent": "punjab"
+    }
+  ]
+}
