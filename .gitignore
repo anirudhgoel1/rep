@@ -21,3 +21,6 @@ __pycache__/
 
 scripts/_audit/
 design-preview/
+
+# local design archive — kept on disk only, not in repo
+*.bak
