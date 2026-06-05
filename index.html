@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Rep · the real DHH top 5</title>
   <meta name="description" content="90 verified DHH artists. Build your top 5, tier the scene, city pride, defend wall, daily 1v1, beef timeline, slang dictionary. Seed rankings until ballots ship. Arguments encouraged.">
-  <meta name="theme-color" content="#F4EFE6">
+  <meta name="theme-color" content="#E8E2D4">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://rep.anirudhgoel.xyz/">
@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Serif:ital,wght@1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Devanagari:wght@400;700&display=swap">
 
-  <link rel="stylesheet" href="/styles.css?v=20260608-1">
+  <link rel="stylesheet" href="/styles.css?v=20260608-2">
   <script src="/assets/vendor/gsap.min.js" defer></script>
   <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
 
@@ -44,7 +44,9 @@
   }
   </script>
 </head>
-<body>
+<body data-page="landing">
+<a class="skip-link" href="#main">skip to main</a>
+
 
 <!-- HERO BAND · the masthead ------------------------------- -->
 <section class="hero-dark">
@@ -62,6 +64,7 @@
       <h1 class="hero-dark__rep">REP<span class="tilt"></span></h1>
       <p class="hero-dark__tagline">the <span class="kw">asli</span> DHH top 5. <span id="heroRankNote">pen-game seed until you vote</span>. arguments encouraged.</p>
       <div class="hero-dark__cta">
+        <a href="#vault" class="btn-dark-ghost">explore the vault ↓</a>
         <a href="/build.html" class="btn-dark-primary">drop your top 5</a>
         <a href="#what-you-can-do" class="btn-dark-ghost">see what you can do ↓</a>
       </div>
@@ -81,10 +84,20 @@
   <div class="scroll-cue" aria-hidden="true">scroll for the heads' picks</div>
 </section>
 
-<div class="shell">
+<div class="shell" id="main">
+
+<nav class="chapter-jump" aria-label="page sections">
+    <a href="#what-you-can-do">01 build</a>
+    <a href="#leaderboard">02 top 5</a>
+    <a href="#cities">03 cities</a>
+    <a href="#beefs">04 beefs</a>
+    <a href="#vault">05 vault</a>
+    <a href="#daily">06 duel</a>
+    <a href="#defend">07 defend</a>
+  </nav>
 
   <!-- marquee · scrolling photo strip of top 40 -->
-  <div class="marquee" id="marquee" aria-hidden="true" style="margin-top: 0; margin-bottom: 0;"></div>
+  <div class="marquee" id="marquee" style="margin-top: 0; margin-bottom: 0;"></div>
 
   <!-- CHAPTER 01 · WHAT YOU CAN DO -------------------------- -->
   <section class="showcase" id="what-you-can-do">
@@ -158,7 +171,8 @@
     </div>
     <div class="section__head">
       <h2 class="section__title">the <span class="burn">pen game</span> top five</h2>
-      <p class="section__meta"><span class="live" id="landingRankNote">crossovers buried · seed ranking until ballots land</span> · <a href="/leaderboard.html">streams toggle</a></p>
+      <p class="section__meta"><span class="live" id="landingRankNote">crossovers buried · seed ranking until ballots land</span> · <a href="/leaderboard.html">full board</a></p>
+      <div id="rankToggle" class="mode-toggle" style="margin-top: 12px;" aria-label="ranking mode"></div>
     </div>
     <ol class="tickets" id="tickets">
       <li class="ticket"><span class="ticket__rank">--</span><span class="ticket__body"><span class="ticket__name">loading roster…</span><span class="ticket__city">one moment</span></span></li>
@@ -174,8 +188,8 @@
       <span class="chapter__rule"></span>
     </div>
     <div class="section__head" style="margin-bottom: 32px;">
-      <h2 class="section__title">nine <span class="burn">doors</span></h2>
-      <p class="section__meta"><span data-roster-count>90</span> artists · 10 cities · neighborhoods produce sounds</p>
+      <h2 class="section__title">nine <span class="burn">regions</span></h2>
+      <p class="section__meta"><span data-roster-count>90</span> artists · 10 cities represented · 9 bento doors (northeast grouped)</p>
     </div>
     <div class="bento-cities" id="cityBento">
       <p class="empty-grid" style="color: var(--ash);">loading the cities…</p>
@@ -207,7 +221,7 @@
       <span class="chapter__rule"></span>
     </div>
     <div class="section__head" style="margin-bottom: 32px;">
-      <h2 class="section__title">eight doors <span class="burn">deeper</span></h2>
+      <h2 class="section__title">nine doors <span class="burn">deeper</span></h2>
       <p class="section__meta">labels · producers · cyphers · slang · timeline · compare · mixtape · beefs</p>
     </div>
     <div class="vault-grid" id="vaultGrid"></div>
@@ -224,20 +238,11 @@
       <h2 class="section__title">two artists. <span class="burn">one tap.</span></h2>
       <p class="section__meta">fresh matchup every day · one vote per head</p>
     </div>
-    <div class="duel">
-      <div class="duel__side">
-        <div class="duel__photo">HK</div>
-        <div class="duel__name">Hanumankind</div>
-        <div class="duel__city">bengaluru</div>
-      </div>
-      <div class="duel__vs">vs</div>
-      <div class="duel__side">
-        <div class="duel__photo">MS</div>
-        <div class="duel__name">MC Stan</div>
-        <div class="duel__city">pune</div>
-      </div>
+    <div class="duel duel--loading" id="duelRoot" aria-live="polite">
+      <div class="duel__skeleton">loading today's matchup…</div>
     </div>
-    <p class="duel__theme">app.js loads today's matchup from the hardcore pool.</p>
+    <p class="duel__theme" id="duelTheme">hardcore pool · one vote per head</p>
+    <p class="duel__meta"><a href="/compare.html">settle it stat-by-stat → compare</a> · <button type="button" class="dice-btn" id="diceBtn">random artist →</button></p>
   </section>
 
   <!-- CHAPTER 07 · DEFEND YOUR #1 --------------------------- -->
@@ -259,27 +264,27 @@
         <p class="quote__text">three-part loop. the first time you hear lunch break, you check the duration twice.</p>
         <figcaption class="quote__meta">
           <span class="defending">defending seedhe maut</span>
-          <span>example take</span>
+          <span class="quote__badge">seed take</span>
         </figcaption>
       </figure>
       <figure class="quote">
         <p class="quote__text">if hanumankind didn't break out globally, the world would still owe india an apology.</p>
         <figcaption class="quote__meta">
           <span class="defending">defending hanumankind</span>
-          <span>example take</span>
+          <span class="quote__badge">seed take</span>
         </figcaption>
       </figure>
       <figure class="quote">
         <p class="quote__text">krsna writes for the page. the verse is the album. the album is the canon.</p>
         <figcaption class="quote__meta">
           <span class="defending">defending krsna</span>
-          <span>example take</span>
+          <span class="quote__badge">seed take</span>
         </figcaption>
       </figure>
     </div>
 
     <!-- who's missing · fans argue the roster itself -->
-    <div class="suggest" id="suggestBox" hidden>
+    <div class="suggest" id="suggestBox">
       <div class="suggest__head">
         <h3 class="suggest__title">who's <span class="burn">missing?</span></h3>
         <span class="suggest__hint">name a rapper the roster skipped · the most-upvoted get admitted</span>
@@ -307,6 +312,6 @@
 
 </div>
 
-<script src="/app.js?v=20260608-1" defer></script>
+<script src="/app.js?v=20260608-2" defer></script>
 </body>
 </html>

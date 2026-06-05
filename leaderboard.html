@@ -5,22 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Top 90 · Rep</title>
   <meta name="description" content="India's full DHH leaderboard. 90 artists ranked. Filter by era, subgenre, or surface the underrated.">
-  <meta name="theme-color" content="#F4EFE6">
+  <meta name="theme-color" content="#E8E2D4">
   <link rel="canonical" href="https://rep.anirudhgoel.xyz/leaderboard.html">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Serif:ital,wght@1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Devanagari:wght@400;700&display=swap">
-  <link rel="stylesheet" href="/styles.css?v=20260608-1">
-  <script src="/assets/vendor/gsap.min.js" defer></script>
-  <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
-</head>
+  <link rel="stylesheet" href="/styles.css?v=20260608-2"></head>
 <body data-page="leaderboard">
-<div class="tape" aria-hidden="true"><div class="tape__inner">india top 90 · era cuts · subgenre cuts · underrated 50 · all live · all argueable</div></div>
+<a class="skip-link" href="#main">skip to main</a>
+
 <div class="shell">
   <header class="topbar" id="topbar"></header>
 
+  <main id="main">
   <section class="hero" style="padding: 56px 0 24px;">
     <p class="hero__kicker">pen game default · crossovers buried · seed until ballots · toggle for streams</p>
     <h1 class="hero__rep" style="font-size: clamp(80px, 14vw, 160px);">TOP <span class="tilt" data-roster-count>90</span></h1>
@@ -30,6 +29,7 @@
 
   <div id="lbModeToggle" class="mode-toggle" aria-label="ranking mode"></div>
 
+  <div class="lb-search-wrap"><input type="search" id="lbSearch" placeholder="filter this board…" autocomplete="off" aria-label="filter leaderboard"></div>
   <nav class="subnav" aria-label="scope">
     <a href="#" data-scope="all" class="scope-tab is-active">all india</a>
     <a href="#" data-scope="era:Gully Wave" class="scope-tab">gully wave</a>
@@ -46,6 +46,9 @@
   </nav>
 
   <div class="lb-list" id="lbList" style="margin-top: 24px;"></div>
+  </main>
+
+
 
   <footer class="foot">
     <div class="foot__row">
@@ -54,11 +57,11 @@
     </div>
     <div class="foot__row">
       <span class="foot__tip">built with respect. <a href="upi://pay?pa=7814769892@yescred&pn=Anirudh%20Goel&cu=INR" id="upiLink">tip via upi →</a></span>
-      <span class="foot__creds">© 2026 · made by <a href="https://anirudhgoel.xyz">anirudh goel</a></span>
+      <span class="foot__creds">© 2026 · made by <a href="https://anirudhgoel.xyz">anirudh goel</a> · cluster member</span>
     </div>
   </footer>
 
 </div>
-<script src="/app.js?v=20260608-1" defer></script>
+<script src="/app.js?v=20260608-2" defer></script>
 </body>
 </html>

@@ -5,24 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tier list · Rep</title>
   <meta name="description" content="Tier the entire DHH scene. S/A/B/C/D rows. Drag artists in. Generate a shareable tier card.">
-  <meta name="theme-color" content="#F4EFE6">
+  <meta name="theme-color" content="#E8E2D4">
   <link rel="canonical" href="https://rep.anirudhgoel.xyz/tier.html">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Serif:ital,wght@1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Devanagari:wght@400;700&display=swap">
-  <link rel="stylesheet" href="/styles.css?v=20260608-1">
-  <script src="/assets/vendor/gsap.min.js" defer></script>
-  <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
-</head>
+  <link rel="stylesheet" href="/styles.css?v=20260608-2"></head>
 <body data-page="tier">
-<div class="tape" aria-hidden="true"><div class="tape__inner">tier the whole scene · drag in or drag out · receipts at the bottom · receipts at the bottom</div></div>
+<a class="skip-link" href="#main">skip to main</a>
+
 <div class="shell">
   <header class="topbar" id="topbar"></header>
 
+  <main id="main">
   <section class="hero" style="padding: 56px 0 24px;">
-    <p class="hero__kicker">drag artists into rows · S to D · auto-saves · tap to remove</p>
+    <p class="hero__kicker">drag or tap artists into rows · S to D · auto-saves · tap to remove</p>
     <h1 class="hero__rep" style="font-size: clamp(80px, 14vw, 160px);">TIER <span class="tilt">5</span></h1>
     <p class="hero__sub" style="font-size: clamp(20px, 2.2vw, 28px);">argue with <span class="kw">science</span>. four bands and an honourable D.</p>
   </section>
@@ -56,25 +55,29 @@
   </div>
 
   <div class="tier-pool">
+    <p id="tierProgress" class="tier-progress"></p>
     <div class="tier-pool__head">
       <span>unranked pool</span>
       <span id="tierPoolCount">loading…</span>
     </div>
     <div class="tier-pool__grid" id="tierPool"></div>
   </div>
+  </main>
+
+
 
   <footer class="foot">
     <div class="foot__row">
       <span class="foot__mark">rep<span class="dot"></span></span>
-      <span class="foot__line">tier list state lives in your browser. nothing leaves your machine until the share-card pipeline ships.</span>
+      <span class="foot__line">tier board autosaves locally · export PNG when you are ready to post</span>
     </div>
     <div class="foot__row">
       <span class="foot__tip">built with respect. <a href="upi://pay?pa=7814769892@yescred&pn=Anirudh%20Goel&cu=INR" id="upiLink">tip via upi →</a></span>
-      <span class="foot__creds">© 2026 · made by <a href="https://anirudhgoel.xyz">anirudh goel</a></span>
+      <span class="foot__creds">© 2026 · made by <a href="https://anirudhgoel.xyz">anirudh goel</a> · cluster member</span>
     </div>
   </footer>
 
 </div>
-<script src="/app.js?v=20260608-1" defer></script>
+<script src="/app.js?v=20260608-2" defer></script>
 </body>
 </html>

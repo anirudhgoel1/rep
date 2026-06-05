@@ -33,7 +33,7 @@
   let LIVE_BALLOTS;
   async function loadArtists() {
     if (ARTISTS) return ARTISTS;
-    const r = await fetch('/data/artists.json?v=20260608-1');
+    const r = await fetch('/data/artists.json?v=20260608-2');
     const j = await r.json();
     ROSTER_META = j._meta || {};
     ARTISTS = (j.artists || []).filter(a => a.is_votable !== 0);
@@ -119,6 +119,52 @@
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
   function lower(s) { return (s || '').toString().toLowerCase(); }
+  function prefersReducedMotion() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  function displayTier(a) {
+    return rankMode() === 'respect' ? (a.respect_tier || a.popularity_tier) : a.popularity_tier;
+  }
+  function tierLabelName() {
+    return rankMode() === 'respect' ? 'pen tier' : 'stream tier';
+  }
+  function toast(msg, ms = 3200) {
+    let el = $('#repToast');
+    if (!el) {
+      el = document.createElement('p');
+      el.id = 'repToast';
+      el.className = 'rep-toast';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.classList.add('is-show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => el.classList.remove('is-show'), ms);
+  }
+  function updatePageMeta({ title, description }) {
+    if (title) document.title = title;
+    if (description) {
+      const m = document.querySelector('meta[name="description"]');
+      if (m) m.setAttribute('content', description);
+    }
+  }
+  const NE_STATES = ['Meghalaya', 'Assam', 'Manipur', 'Mizoram', 'Nagaland', 'Tripura', 'Arunachal Pradesh', 'Sikkim'];
+  function cityBentoGroups() {
+    if (!ARTISTS) return {};
+    return {
+      Mumbai: { artists: ARTISTS.filter(a => a.city_represented === 'Mumbai' && !a.is_crossover), tag: 'gully wave', sub: 'dharavi · kurla · andheri · mira road', size: 'big' },
+      Delhi: { artists: ARTISTS.filter(a => a.state === 'Delhi NCR' && !a.is_crossover), tag: 'lyrical wave', sub: 'the conscious heartbeat', size: 'med' },
+      Punjab: { artists: ARTISTS.filter(a => a.state === 'Punjab' && !a.is_crossover), tag: 'parallel kingdom', sub: 'wazir · sikander · big boi · jelo', size: 'med' },
+      Bengaluru: { artists: ARTISTS.filter(a => a.city_represented === 'Bengaluru' && !a.is_crossover), tag: 'global lane', sub: 'hanumankind broke through', size: 'sm' },
+      Pune: { artists: ARTISTS.filter(a => a.city_represented === 'Pune' && !a.is_crossover), tag: 'drill capital', sub: 'mc stan · stan wave', size: 'sm' },
+      Northeast: { artists: ARTISTS.filter(a => NE_STATES.includes(a.state) && !a.is_crossover), tag: 'northeast nucleus', sub: 'eight states · one sound', size: 'sm', href: '/city.html?city=Northeast' },
+      Chennai: { artists: ARTISTS.filter(a => a.city_represented === 'Chennai' && !a.is_crossover), tag: 'tamil wave', sub: 'paal dabba global', size: 'xs' },
+      Ahmedabad: { artists: ARTISTS.filter(a => a.city_represented === 'Ahmedabad' && !a.is_crossover), tag: 'gujarati pen', sub: 'dhanji solo', size: 'xs' },
+      Srinagar: { artists: ARTISTS.filter(a => a.city_represented === 'Srinagar' && !a.is_crossover), tag: 'kashmir conscience', sub: 'ahmer alone, loud', size: 'xs' }
+    };
+  }
   function isOgMainstream(a) {
     if (!a) return false;
     const tags = a.tags || [];
@@ -151,23 +197,32 @@
   let API_LIVE = null;
   function renderApiStatusBanner() {
     if ($('#apiStatusBanner')) return;
-    const bar = document.createElement('p');
+    const bar = document.createElement('div');
     bar.id = 'apiStatusBanner';
     bar.className = 'api-status';
     bar.hidden = true;
     bar.setAttribute('role', 'status');
+    bar.innerHTML = '<span class="api-status__text"></span><button type="button" class="api-status__dismiss" aria-label="dismiss status">×</button>';
     const topbar = $('#topbar');
-    if (topbar?.parentElement) topbar.parentElement.insertAdjacentElement('afterend', bar);
+    if (topbar?.parentElement) topbar.parentElement.insertAdjacentElement('beforebegin', bar);
     else document.body.prepend(bar);
+    $('.api-status__dismiss', bar)?.addEventListener('click', () => {
+      bar.hidden = true;
+      sessionStorage.setItem('rep:apiBannerDismissed', '1');
+    });
   }
   function syncApiStatusUI() {
     const el = $('#apiStatusBanner');
     if (!el || API_LIVE === null) return;
+    if (sessionStorage.getItem('rep:apiBannerDismissed') === '1') { el.hidden = true; return; }
     el.hidden = false;
     el.className = 'api-status ' + (API_LIVE ? 'api-status--live' : 'api-status--seed');
-    el.textContent = API_LIVE
-      ? 'ballots API live · votes count on the board'
-      : 'seed mode · rankings are editorial until ballots API is deployed';
+    const txt = $('.api-status__text', el);
+    if (txt) {
+      txt.textContent = API_LIVE
+        ? 'ballots API live · votes count on the board'
+        : 'seed mode · rankings are editorial until ballots API is deployed';
+    }
   }
   async function apiUp() {
     if (_apiUp !== null) return _apiUp;
@@ -193,11 +248,11 @@
 
   /* photo rendering · graceful fallback to initials --------- */
   function photoHtml(a, opts = {}) {
-    const cls = opts.cls || '';
+    const alt = opts.decorative ? '' : esc(a.stage_name);
     if (a.image_url) {
-      return `<img src="${esc(a.image_url)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'fallback',textContent:'${esc(initials(a.stage_name))}'}))">`;
+      return `<img src="${esc(a.image_url)}" alt="${alt}" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'fallback',textContent:'${esc(initials(a.stage_name))}'}))">`;
     }
-    return `<span class="fallback">${esc(initials(a.stage_name))}</span>`;
+    return `<span class="fallback" aria-hidden="${opts.decorative ? 'true' : 'false'}">${esc(initials(a.stage_name))}</span>`;
   }
 
   function stampFor(a) {
@@ -216,7 +271,7 @@
     const stamp = stampFor(a);
     const stampHtml = stamp ? `<span class="stamp is-tr ${stamp.cls}">${esc(stamp.text)}</span>` : '';
     // tier shown is respect tier when in respect mode, else popularity tier
-    const displayTier = rankMode() === 'respect' ? (a.respect_tier || a.popularity_tier) : a.popularity_tier;
+    const tier = displayTier(a);
     return `
       <article class="card ${picked ? 'is-picked' : ''}"
                draggable="${opts.draggable !== false}" data-slug="${esc(a.slug)}">
@@ -226,7 +281,7 @@
         <div class="card__name">${esc(a.stage_name)}</div>
         <div class="card__meta">
           <span>${esc(lower(a.city_represented))}</span>
-          <span class="card__tier">${esc(displayTier)}</span>
+          <span class="card__tier">${esc(tier)}</span>
         </div>
         ${linkEnd}
       </article>`;
@@ -240,8 +295,10 @@
     if (!el) return;
     const path = location.pathname;
     const isActive = (href) => path === href || path.startsWith(href.replace('.html', ''));
+    const moreActive = ['/city.html', '/beefs.html', '/timeline.html', '/slang.html', '/labels.html', '/producers.html', '/cyphers.html']
+      .some(h => isActive(h));
     el.innerHTML = `
-      <a href="/" class="topbar__mark" aria-label="Rep">REP<span class="dot"></span></a>
+      <a href="/" class="topbar__mark" aria-label="Rep home">REP<span class="dot"></span></a>
       <nav class="topbar__nav" aria-label="primary">
         <a href="/build.html" class="${isActive('/build.html') ? 'is-active' : ''}">drop 5</a>
         <a href="/tier.html" class="${isActive('/tier.html') ? 'is-active' : ''}">tier</a>
@@ -249,11 +306,43 @@
         <a href="/mixtape.html" class="${isActive('/mixtape.html') ? 'is-active' : ''}">mixtape</a>
         <a href="/compare.html" class="${isActive('/compare.html') ? 'is-active' : ''}">compare</a>
       </nav>
-      <div class="gsearch" id="gsearch">
-        <input type="search" placeholder="search artists…" aria-label="search" autocomplete="off">
-        <div class="gsearch__results" id="gsearchResults"></div>
+      <div class="topbar__tools">
+        <div class="topbar__more" id="topbarMore">
+          <button type="button" class="topbar__more-btn ${moreActive ? 'is-active' : ''}" aria-expanded="false" aria-controls="topbarMorePanel" id="topbarMoreBtn">more ▾</button>
+          <div class="topbar__more-panel" id="topbarMorePanel" hidden>
+            <a href="/city.html" class="${isActive('/city.html') ? 'is-active' : ''}">cities</a>
+            <a href="/beefs.html" class="${isActive('/beefs.html') ? 'is-active' : ''}">beefs</a>
+            <a href="/timeline.html" class="${isActive('/timeline.html') ? 'is-active' : ''}">timeline</a>
+            <a href="/slang.html" class="${isActive('/slang.html') ? 'is-active' : ''}">slang</a>
+            <a href="/labels.html" class="${isActive('/labels.html') ? 'is-active' : ''}">labels</a>
+            <a href="/producers.html" class="${isActive('/producers.html') ? 'is-active' : ''}">producers</a>
+            <a href="/cyphers.html" class="${isActive('/cyphers.html') ? 'is-active' : ''}">cyphers</a>
+          </div>
+        </div>
+        <div class="gsearch" id="gsearch">
+          <input type="search" placeholder="search artists…" aria-label="search artists" autocomplete="off">
+          <div class="gsearch__results" id="gsearchResults"></div>
+        </div>
       </div>`;
     initSearch();
+    initTopbarMore();
+  }
+  function initTopbarMore() {
+    const btn = $('#topbarMoreBtn');
+    const panel = $('#topbarMorePanel');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+      panel.hidden = open;
+    });
+    document.addEventListener('click', (e) => {
+      if (!$('#topbarMore')?.contains(e.target)) {
+        btn.setAttribute('aria-expanded', 'false');
+        panel.hidden = true;
+      }
+    });
   }
   renderApiStatusBanner();
   renderTopbar();
@@ -341,12 +430,14 @@
 
   /* GSAP scroll reveals · registered once per page load */
   function initScrollReveals() {
+    const reveal = () => $$('[data-reveal]').forEach(el => el.classList.add('is-revealed'));
+    if (prefersReducedMotion()) { reveal(); return; }
     if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
-      // fallback: snap reveal class on any [data-reveal] using intersection observer
       const io = new IntersectionObserver((entries) => {
         entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-revealed'); io.unobserve(e.target); } });
       }, { threshold: 0.12 });
       $$('[data-reveal]').forEach(el => io.observe(el));
+      setTimeout(reveal, 1800);
       return;
     }
     gsap.registerPlugin(ScrollTrigger);
@@ -357,8 +448,12 @@
         ease: 'power3.out', overwrite: true,
         onStart: () => batch.forEach(el => el.classList.add('is-revealed'))
       }),
-      onLeaveBack: batch => gsap.set(batch, { opacity: 0, y: 60, overwrite: true })
+      onLeaveBack: batch => {
+        if (prefersReducedMotion()) return;
+        gsap.set(batch, { opacity: 0, y: 60, overwrite: true });
+      }
     });
+    setTimeout(reveal, 2200);
   }
 
   if (page === 'landing') initLanding();
@@ -525,8 +620,8 @@
       ['divine', 'naezy', 'the gully wave · founder vs cult OG']
     ];
     const seedPair = seedPairs[Math.floor(Date.now() / 86400000) % seedPairs.length];
-    const duel = $('.duel');
-    const duelTheme = $('.duel__theme');
+    const duel = $('#duelRoot') || $('.duel');
+    const duelTheme = $('#duelTheme') || $('.duel__theme');
     if (duel) {
       let daily = null;
       try { daily = await API.get('/daily'); } catch { /* offline → seed pair */ }
@@ -654,18 +749,10 @@
     function renderCityBento() {
       const bento = $('#cityBento');
       if (!bento) return;
-      const NE = ['Meghalaya','Assam','Manipur','Mizoram','Nagaland','Tripura','Arunachal Pradesh','Sikkim'];
-      const groups = {
-        Mumbai: { artists: ARTISTS.filter(a => a.city_represented === 'Mumbai' && !a.is_crossover), tag: 'gully wave', sub: 'dharavi · kurla · andheri · mira road', size: 'big' },
-        Delhi: { artists: ARTISTS.filter(a => a.state === 'Delhi NCR' && !a.is_crossover), tag: 'lyrical wave', sub: 'the conscious heartbeat', size: 'med' },
-        Punjab: { artists: ARTISTS.filter(a => a.state === 'Punjab' && !a.is_crossover), tag: 'parallel kingdom', sub: 'wazir · sikander · big boi · jelo', size: 'med' },
-        Bengaluru: { artists: ARTISTS.filter(a => a.city_represented === 'Bengaluru' && !a.is_crossover), tag: 'global lane', sub: 'hanumankind broke through', size: 'sm' },
-        Pune: { artists: ARTISTS.filter(a => a.city_represented === 'Pune' && !a.is_crossover), tag: 'drill capital', sub: 'mc stan · stan wave', size: 'sm' },
-        Northeast: { artists: ARTISTS.filter(a => NE.includes(a.state) && !a.is_crossover), tag: 'northeast nucleus', sub: 'eight states. 18 artists.', size: 'sm', href: '/city.html?city=Northeast' },
-        Chennai: { artists: ARTISTS.filter(a => a.city_represented === 'Chennai' && !a.is_crossover), tag: 'tamil wave', sub: 'paal dabba global', size: 'xs' },
-        Ahmedabad: { artists: ARTISTS.filter(a => a.city_represented === 'Ahmedabad' && !a.is_crossover), tag: 'gujarati pen', sub: 'dhanji solo', size: 'xs' },
-        Srinagar: { artists: ARTISTS.filter(a => a.city_represented === 'Srinagar' && !a.is_crossover), tag: 'kashmir conscience', sub: 'ahmer alone, loud', size: 'xs' }
-      };
+      const groups = cityBentoGroups();
+      Object.entries(groups).forEach(([city, g]) => {
+        if (city === 'Northeast') g.sub = `eight states · ${g.artists.length} artists`;
+      });
       bento.innerHTML = Object.entries(groups).map(([city, g]) => {
         const photoStack = g.artists.slice(0, 4).map(a => `<span class="bento-city__photo">${photoHtml(a)}</span>`).join('');
         const href = g.href || `/city.html?city=${esc(city)}`;
@@ -685,18 +772,34 @@
 
     // vault · dark compact grid · no rotation
     renderVault();
-    function renderVault() {
+    async function renderVault() {
       const wrap = $('#vaultGrid');
       if (!wrap) return;
+      let slangN = 19, tlN = 22, cypherN = 4, labelN = 10, beefN = 3;
+      try {
+        const [sl, tl, cy, lb, bf] = await Promise.all([
+          fetch('/data/slang.json').then(r => r.json()),
+          fetch('/data/timeline.json').then(r => r.json()),
+          fetch('/data/cyphers.json').then(r => r.json()),
+          fetch('/data/labels.json').then(r => r.json()),
+          fetch('/data/beefs.json').then(r => r.json()),
+        ]);
+        slangN = sl.terms?.length || slangN;
+        tlN = tl.milestones?.length || tlN;
+        cypherN = cy.cyphers?.length || cypherN;
+        labelN = lb.labels?.length || labelN;
+        beefN = bf.beefs?.length || beefN;
+      } catch { /* keep fallbacks */ }
       const items = [
-        { href: '/labels.html', n: '01', t: 'LABELS', sub: 'the institutions', stat: '10 labels' },
+        { href: '/labels.html', n: '01', t: 'LABELS', sub: 'the institutions', stat: `${labelN} labels` },
         { href: '/producers.html', n: '02', t: 'PRODUCERS', sub: 'the unsung hands', stat: '6 boards' },
-        { href: '/cyphers.html', n: '03', t: 'CYPHERS', sub: 'scene snapshots', stat: '4 tracks' },
-        { href: '/slang.html', n: '04', t: 'SLANG', sub: 'the dictionary', stat: '19 terms' },
-        { href: '/timeline.html', n: '05', t: 'TIMELINE', sub: '1992 to 2026', stat: '22 milestones' },
+        { href: '/cyphers.html', n: '03', t: 'CYPHERS', sub: 'scene snapshots', stat: `${cypherN} tracks` },
+        { href: '/slang.html', n: '04', t: 'SLANG', sub: 'the dictionary', stat: `${slangN} terms` },
+        { href: '/timeline.html', n: '05', t: 'TIMELINE', sub: '1992 to 2026', stat: `${tlN} milestones` },
         { href: '/compare.html', n: '06', t: 'COMPARE', sub: 'stat-by-stat', stat: 'two artists' },
         { href: '/mixtape.html', n: '07', t: 'MIXTAPE', sub: 'side A · your taste', stat: '10 slots' },
-        { href: '/beefs.html', n: '08', t: 'BEEFS', sub: 'receipts attached', stat: '3 verified' }
+        { href: '/leaderboard.html', n: '08', t: 'TOP ' + rosterCount(), sub: 'full india board', stat: 'pen + streams' },
+        { href: '/beefs.html', n: '09', t: 'BEEFS', sub: 'receipts attached', stat: `${beefN} verified` }
       ];
       wrap.innerHTML = items.map(i => `
         <a class="vault-item" href="${i.href}">
@@ -726,7 +829,6 @@
       }
     });
 
-    // random artist button
     const dice = $('#diceBtn');
     if (dice) {
       dice.addEventListener('click', () => {
@@ -734,6 +836,8 @@
         location.href = `/artist.html?slug=${a.slug}`;
       });
     }
+
+    if (duel) duel.classList.remove('duel--loading');
   }
 
   /* ============================================================
@@ -746,8 +850,34 @@
       slots: [null, null, null, null, null],
       filters: { city: '', era: '', subgenre: '', language: '', search: '' },
       defense: '',
-      handle: ''
+      handle: '',
+      activeSlot: null
     };
+    try {
+      const last = JSON.parse(localStorage.getItem('rep:last_top5') || 'null');
+      if (last?.picks?.length === 5) {
+        last.picks.forEach((slug, i) => { state.slots[i] = BY_SLUG[slug] || null; });
+        state.defense = last.defense || '';
+        state.handle = last.handle || '';
+        const restore = $('#builderRestore');
+        if (restore) {
+          restore.hidden = false;
+          restore.innerHTML = `<span>editing your saved top 5</span><button type="button" class="dice-btn" id="clearRestore">start fresh</button>`;
+          $('#clearRestore', restore)?.addEventListener('click', () => {
+            state.slots = [null, null, null, null, null];
+            state.defense = '';
+            restore.hidden = true;
+            $('#defense').value = '';
+            $('#handle').value = '';
+            renderSlots(); renderGrid(); updateLock();
+          });
+        }
+        const defEl = $('#defense');
+        if (defEl) { defEl.value = state.defense; $('#defenseChar').textContent = `${state.defense.length}/140`; }
+        const hEl = $('#handle');
+        if (hEl) hEl.value = state.handle;
+      }
+    } catch { /* ignore corrupt save */ }
     populateFilters();
     renderGrid();
     renderSlots();
@@ -808,11 +938,14 @@
           card.style.opacity = '0.5';
         });
         card.addEventListener('dragend', () => { card.style.opacity = ''; });
-        card.addEventListener('click', (e) => {
+        card.addEventListener('click', () => {
           if (card.classList.contains('is-picked')) return;
-          const idx = state.slots.findIndex(s => !s);
-          if (idx === -1) return;
+          let idx = state.activeSlot;
+          if (idx == null || state.slots[idx]) idx = state.slots.findIndex(s => !s);
+          if (idx === -1) { toast('all five slots full · remove someone first'); return; }
           pickArtist(card.dataset.slug, idx);
+          state.activeSlot = null;
+          $$('.slot').forEach(s => s.classList.remove('is-target'));
         });
       });
     }
@@ -841,7 +974,17 @@
           if (slug) pickArtist(slug, i);
         };
         const rm = $('.slot__remove', el);
-        if (rm) rm.onclick = () => { state.slots[i] = null; renderSlots(); renderGrid(); updateLock(); };
+        if (rm) {
+          const who = a ? a.stage_name : `slot ${i + 1}`;
+          rm.setAttribute('aria-label', `remove ${who} from slot ${i + 1}`);
+          rm.onclick = () => { state.slots[i] = null; renderSlots(); renderGrid(); updateLock(); };
+        }
+        el.onclick = (e) => {
+          if (e.target.closest('.slot__remove')) return;
+          state.activeSlot = i;
+          $$('.slot').forEach(s => s.classList.remove('is-target'));
+          el.classList.add('is-target');
+        };
       });
       updateLock();
     }
@@ -859,7 +1002,8 @@
       const btn = $('#lockBtn');
       const filled = state.slots.filter(Boolean).length;
       btn.disabled = filled < 5;
-      btn.textContent = filled < 5 ? `pick ${5 - filled} more` : 'lock it in';
+      const hasSaved = !!localStorage.getItem('rep:last_top5');
+      btn.textContent = filled < 5 ? `pick ${5 - filled} more` : (hasSaved ? 'lock & share again' : 'lock it in');
     }
 
     const defenseEl = $('#defense');
@@ -908,7 +1052,7 @@
         showShareModal('your DHH top 5', canvas, filename);
       } catch (e) {
         console.error(e);
-        alert('PNG render hit an error. try refreshing.');
+        toast('PNG render hit an error · try refreshing');
       } finally {
         btn.disabled = false; btn.textContent = orig;
       }
@@ -928,7 +1072,7 @@
     // load bios in parallel; ok if missing
     let bio = null;
     try {
-      const biosData = await (await fetch('/data/bios.json?v=20260608-1')).json();
+      const biosData = await (await fetch('/data/bios.json?v=20260608-2')).json();
       bio = biosData.bios?.[slug] || null;
     } catch {}
 
@@ -955,7 +1099,10 @@
       .sort((x, y) => mockVotes(y) - mockVotes(x))
       .slice(0, 6);
 
-    document.title = `${a.stage_name} · Rep`;
+    updatePageMeta({
+      title: `${a.stage_name} · Rep`,
+      description: `${a.stage_name} — ${a.city_represented || 'DHH'} · ${a.era || ''} · India rank #${rank}. Spotify, tracks, similar artists.`
+    });
     const subBits = [];
     if (a.real_name) subBits.push(a.real_name);
     subBits.push(a.city_represented);
@@ -986,6 +1133,11 @@
           <p class="artist-meta__sub">${esc(subBits.join(' · '))}</p>
           ${a.note ? `<p style="font-family: var(--font-serif); font-size: 16px; color: var(--ink-soft); line-height: 1.5;">${esc(a.note)}</p>` : ''}
           <div class="tag-pills">${pills}</div>
+          <div class="artist-actions">
+            <a class="feature__cta" href="/build.html">add to top 5 →</a>
+            <a class="feature__cta" href="/compare.html?a=${esc(a.slug)}&b=${esc(similar[0]?.slug || 'krsna')}">compare →</a>
+            ${a.city_represented ? `<a class="feature__cta" href="/city.html?city=${encodeURIComponent(a.city_represented)}">← ${esc(lower(a.city_represented))}</a>` : ''}
+          </div>
           ${bio ? `
             <div class="artist-bio">
               <div class="artist-bio__head">${esc(bio.headline)}</div>
@@ -1023,25 +1175,75 @@
         </div>
       </div>
 
-      <div class="artist-section">
+      <div class="artist-section" id="artistDefend">
         <h3>defend <span class="burn">${esc(a.stage_name.toLowerCase())}</span></h3>
-        <p style="font-family: var(--font-mono); font-size: 12px; color: var(--mute); letter-spacing: 0.08em;">
-          when the defend wall ships next: top takes for ${esc(lower(a.stage_name))} surface here.
-        </p>
+        <p class="artist-defend-note" id="artistDefendNote">top takes from the wall · drop yours from the builder</p>
+        <div class="defend-list defend-list--artist" id="artistDefendList"></div>
       </div>
     `;
+    wireArtistDefends(slug);
+  }
+
+  async function wireArtistDefends(slug) {
+    const list = $('#artistDefendList');
+    if (!list) return;
+    let takes = [];
+    try { takes = await API.get('/defend?sort=top&limit=20'); } catch { /* seed mode */ }
+    const filtered = (Array.isArray(takes) ? takes : []).filter(t => t.defending === slug);
+    if (filtered.length) {
+      list.innerHTML = filtered.map(t => `
+        <figure class="quote">
+          <p class="quote__text">${esc(t.text || t.defense || '')}</p>
+          <figcaption class="quote__meta">
+            <span class="defending">community take</span>
+            ${t.upvotes ? `<span>▲ ${t.upvotes}</span>` : ''}
+          </figcaption>
+        </figure>`).join('');
+    } else {
+      list.innerHTML = `
+        <figure class="quote">
+          <p class="quote__text">drop a one-liner from the builder · 140 chars · defend your #1</p>
+          <figcaption class="quote__meta"><span class="quote__badge">seed mode</span></figcaption>
+        </figure>`;
+    }
   }
 
   /* ============================================================
      city page · query string ?city=Mumbai
      ============================================================ */
+  function renderCityPicker() {
+    const groups = cityBentoGroups();
+    const tiles = Object.entries(groups).map(([city, g]) => {
+      const href = g.href || `/city.html?city=${encodeURIComponent(city)}`;
+      const photoStack = g.artists.slice(0, 3).map(a => `<span class="bento-city__photo">${photoHtml(a)}</span>`).join('');
+      return `
+        <a class="bento-city bento-city--${g.size}" href="${href}">
+          <div class="bento-city__top">
+            <span class="bento-city__count">${g.artists.length} artists</span>
+            <span class="bento-city__tag">${esc(g.tag)}</span>
+          </div>
+          <h3 class="bento-city__name">${esc(city)}</h3>
+          <p class="bento-city__sub">${esc(g.sub)}</p>
+          <div class="bento-city__photos">${photoStack}</div>
+          <div class="bento-city__cta">open city profile →</div>
+        </a>`;
+    }).join('');
+    updatePageMeta({ title: 'Cities · Rep', description: 'Pick a DHH city or region — Mumbai, Delhi, Punjab, Northeast, and more.' });
+    $('#cityRoot').innerHTML = `
+      <section class="hero" style="padding: 40px 0 24px;">
+        <p class="hero__kicker">nine regions · ten cities represented</p>
+        <h1 class="hero__rep" style="font-size: clamp(64px, 12vw, 120px);">REP YOUR <span class="tilt">CITY</span></h1>
+        <p class="hero__sub">the gully is hyperlocal · pick a door</p>
+      </section>
+      <div class="bento-cities city-picker-grid">${tiles}</div>`;
+  }
+
   async function initCity() {
     await loadArtists();
     const city = new URLSearchParams(location.search).get('city');
-    if (!city) { $('#cityRoot').innerHTML = '<p class="empty-grid">pick a city from the home page.</p>'; return; }
+    if (!city) { renderCityPicker(); return; }
 
     // Region grouping · "Punjab" + "Northeast" are scopes that span multiple cities
-    const NE_STATES = ['Meghalaya','Assam','Manipur','Mizoram','Nagaland','Tripura','Arunachal Pradesh','Sikkim'];
     let inCity;
     if (city === 'Punjab') {
       inCity = ARTISTS.filter(a => a.state === 'Punjab');
@@ -1070,9 +1272,14 @@
       'shillong': { sub: 'the northeast nucleus. khasi blood, anthem builders, vogue covers.', deva: 'शिलांग', tagline: 'where the country forgot to look.' },
       'srinagar': { sub: 'kashmiri conscience. ahmer alone, but loud.', deva: 'श्रीनगर', tagline: 'where the politics writes itself.' },
       'chennai': { sub: 'tamil wave. hiphop tamizha, paal dabba, oorum blood.', deva: 'சென்னை', tagline: 'where the language is the beat.' },
-      'ahmedabad': { sub: 'gujju shawn carter. dhanji solo. early days, big upside.', deva: 'અમદાવાદ', tagline: 'where the gujarati flag goes up.' }
+      'ahmedabad': { sub: 'gujju shawn carter. dhanji solo. early days, big upside.', deva: 'અમદાવાદ', tagline: 'where the gujarati flag goes up.' },
+      'northeast': { sub: 'the northeast nucleus. khasi blood, anthem builders, eight states one sound.', deva: 'पूर्वोत्तर', tagline: 'where the country forgot to look.' }
     };
-    const meta = blurbs[lower(city)] || { sub: `${inCity.length} artists.`, deva: city, tagline: '' };
+    const meta = blurbs[lower(city)] || { sub: `${inCity.length} artists on the roster.`, deva: city, tagline: '' };
+    updatePageMeta({
+      title: `${city} · Rep`,
+      description: `${inCity.length} DHH artists repping ${city}. Top 10, full roster, languages, era breakdown.`
+    });
 
     $('#cityRoot').innerHTML = `
       <div class="city-hero">
@@ -1102,12 +1309,17 @@
                 <span class="lb-row__photo">${photoHtml(a)}</span>
                 <span><span class="lb-row__name">${esc(a.stage_name)}</span><br><span class="lb-row__city">${esc(lower(a.city_of_origin || a.city_represented))}</span></span>
                 <span class="lb-row__pct">${p}%</span>
-                <span class="lb-row__tier">${esc(a.popularity_tier)}</span>
+                <span class="lb-row__tier">${esc(displayTier(a))}</span>
                 <span class="lb-row__bar"><span style="width:${Math.min(100, parseFloat(p) * 6)}%"></span></span>
               </a>`;
           }).join('')}
         </div>
       </div>
+
+      ${top10.length >= 2 ? `
+      <div class="artist-section city-compare-cta">
+        <a class="feature__cta" href="/compare.html?a=${esc(top10[0].slug)}&b=${esc(top10[1].slug)}">#1 vs #2 in ${esc(lower(city))} → compare</a>
+      </div>` : ''}
 
       ${inCity.length > 10 ? `
       <div class="artist-section">
@@ -1116,6 +1328,8 @@
           ${sorted.slice(10).map(a => cardHtml(a, { link: true, draggable: false })).join('')}
         </div>
       </div>` : ''}
+
+      <p class="city-back"><a href="/city.html">← all cities</a> · <a href="/">home</a></p>
     `;
   }
 
@@ -1128,6 +1342,53 @@
       tiers: { S: [], A: [], B: [], C: [], D: [] },
       pool: ARTISTS.slice()
     };
+    try {
+      const saved = JSON.parse(localStorage.getItem('rep:tier_board') || 'null');
+      if (saved?.tiers) {
+        state.tiers = { S: [], A: [], B: [], C: [], D: [], ...saved.tiers };
+        const placed = new Set(['S', 'A', 'B', 'C', 'D'].flatMap(t => state.tiers[t] || []));
+        state.pool = ARTISTS.filter(a => !placed.has(a.slug));
+      }
+    } catch { /* ignore */ }
+
+    function saveTierBoard() {
+      localStorage.setItem('rep:tier_board', JSON.stringify({ tiers: state.tiers, updated: Date.now() }));
+    }
+
+    function placeInTier(slug, letter) {
+      ['S', 'A', 'B', 'C', 'D'].forEach(t => { state.tiers[t] = (state.tiers[t] || []).filter(s => s !== slug); });
+      state.pool = state.pool.filter(a => a.slug !== slug);
+      state.tiers[letter].push(slug);
+      render();
+      $('#tierPicker')?.classList.remove('is-open');
+    }
+
+    function showTierPicker(slug) {
+      const a = BY_SLUG[slug];
+      if (!a) return;
+      let picker = $('#tierPicker');
+      if (!picker) {
+        picker = document.createElement('div');
+        picker.id = 'tierPicker';
+        picker.className = 'tier-picker';
+        picker.setAttribute('role', 'dialog');
+        picker.setAttribute('aria-modal', 'true');
+        document.body.appendChild(picker);
+        picker.addEventListener('click', (e) => { if (e.target === picker) picker.classList.remove('is-open'); });
+      }
+      picker.innerHTML = `
+        <div class="tier-picker__inner">
+          <p class="tier-picker__title">place <strong>${esc(a.stage_name)}</strong></p>
+          <div class="tier-picker__btns">
+            ${['S', 'A', 'B', 'C', 'D'].map(L => `<button type="button" class="tier-picker__btn" data-tier="${L}">${L} tier</button>`).join('')}
+          </div>
+          <button type="button" class="dice-btn tier-picker__cancel">cancel</button>
+        </div>`;
+      $$('.tier-picker__btn', picker).forEach(btn => btn.addEventListener('click', () => placeInTier(slug, btn.dataset.tier)));
+      $('.tier-picker__cancel', picker)?.addEventListener('click', () => picker.classList.remove('is-open'));
+      picker.classList.add('is-open');
+    }
+
     render();
 
     function render() {
@@ -1163,16 +1424,26 @@
       });
 
       const poolEl = $('#tierPool');
-      $('#tierPoolCount').textContent = `${state.pool.length} unranked · drag in`;
+      const ranked = ['S', 'A', 'B', 'C', 'D'].reduce((n, t) => n + (state.tiers[t]?.length || 0), 0);
+      $('#tierPoolCount').textContent = `${state.pool.length} unranked · drag or tap`;
+      const prog = $('#tierProgress');
+      if (prog) prog.textContent = `${ranked} / ${ARTISTS.length} artists ranked · autosaved locally`;
       poolEl.innerHTML = state.pool.map(a => miniHtml(a)).join('');
       $$('.tier-mini', poolEl).forEach(m => {
+        let dragged = false;
         m.setAttribute('draggable', 'true');
         m.addEventListener('dragstart', (e) => {
+          dragged = true;
           e.dataTransfer.setData('text/slug', m.dataset.slug);
           m.style.opacity = '0.5';
         });
-        m.addEventListener('dragend', () => { m.style.opacity = ''; });
+        m.addEventListener('dragend', () => { m.style.opacity = ''; setTimeout(() => { dragged = false; }, 50); });
+        m.addEventListener('click', () => {
+          if (dragged) return;
+          showTierPicker(m.dataset.slug);
+        });
       });
+      saveTierBoard();
     }
 
     function miniHtml(a) {
@@ -1199,7 +1470,7 @@
         showShareModal('your DHH tier list', canvas, filename);
       } catch (e) {
         console.error(e);
-        alert('PNG render hit an error. try refreshing.');
+        toast('PNG render hit an error · try refreshing');
       } finally {
         btn.disabled = false; btn.textContent = orig;
       }
@@ -1209,6 +1480,7 @@
       if (!confirm('reset the board? you will lose your current tiering.')) return;
       state.tiers = { S: [], A: [], B: [], C: [], D: [] };
       state.pool = ARTISTS.slice();
+      localStorage.removeItem('rep:tier_board');
       render();
     });
   }
@@ -1231,12 +1503,14 @@
     list.innerHTML = takes.map(t => {
       const a = BY_SLUG[t.defending];
       const who = a ? a.stage_name : (t.defending || 'their #1');
+      const badge = API_LIVE ? 'community' : 'seed take';
       const handle = t.username ? '@' + t.username : 'a head';
       return `
         <figure class="quote" data-id="${esc(t.id)}">
           <p class="quote__text">${esc(t.defense)}</p>
           <figcaption class="quote__meta">
             <span class="defending">defending ${esc(lower(who))} · ${esc(handle)}</span>
+            <span class="quote__badge">${badge}</span>
             <button class="quote__up ${t.voted ? 'is-up' : ''}" data-id="${esc(t.id)}">▲ ${t.upvotes}</button>
           </figcaption>
         </figure>`;
@@ -1256,11 +1530,21 @@
   async function wireSuggestions() {
     const box = $('#suggestBox');
     if (!box) return;
-    if (!(await apiUp()) || !_apiDb) return; // needs worker + D1
-    box.hidden = false;
-
+    const live = (await apiUp()) && _apiDb;
     const listEl = $('#suggestList');
     const form = $('#suggestForm');
+
+    if (!live) {
+      box.classList.add('is-disabled');
+      if (form) {
+        form.querySelectorAll('input, button').forEach(el => { el.disabled = true; });
+      }
+      if (listEl) {
+        listEl.innerHTML = `<li class="suggest__item suggest__item--muted">nominations open when ballots API deploys · seed mode for now</li>`;
+      }
+      return;
+    }
+    box.classList.remove('is-disabled');
 
     async function refresh() {
       let rows = [];
@@ -1385,10 +1669,22 @@
             <span class="lb-row__photo">${photoHtml(a)}</span>
             <span><span class="lb-row__name">${esc(a.stage_name)}</span><br><span class="lb-row__city">${esc(lower(a.city_represented))}</span></span>
             <span class="lb-row__pct">${pct}</span>
-            <span class="lb-row__tier">${esc(a.popularity_tier)}</span>
+            <span class="lb-row__tier" title="${esc(tierLabelName())}">${esc(displayTier(a))}</span>
             <span class="lb-row__bar"><span style="width:${w}%"></span></span>
           </a>`;
       }).join('');
+    }
+
+    const lbSearch = $('#lbSearch');
+    if (lbSearch) {
+      lbSearch.addEventListener('input', () => {
+        const q = lbSearch.value.toLowerCase().trim();
+        $$('.lb-row', $('#lbList')).forEach(row => {
+          const name = $('.lb-row__name', row)?.textContent?.toLowerCase() || '';
+          const city = $('.lb-row__city', row)?.textContent?.toLowerCase() || '';
+          row.style.display = !q || name.includes(q) || city.includes(q) ? '' : 'none';
+        });
+      });
     }
   }
 
@@ -1414,6 +1710,7 @@
           <p class="beef-detail__summary">${esc(b.summary)}</p>
           ${tracks ? `<ul class="beef-tracks">${tracks}</ul>` : ''}
           <div class="beef-detail__verdict">${esc(b.verdict)}</div>
+          ${a && c ? `<a class="feature__cta" href="/compare.html?a=${esc(a.slug)}&b=${esc(c.slug)}" style="margin-top: 16px;">compare the two →</a>` : ''}
         </article>`;
     }).join('') + (data.pending ? `
       <article class="beef-detail" style="background: var(--paper-deep); border-style: dashed;">
@@ -1430,13 +1727,29 @@
      ============================================================ */
   async function initSlang() {
     const data = await (await fetch('/data/slang.json')).json();
-    $('#slangRoot').innerHTML = data.terms.map(t => `
-      <article class="gloss">
-        <div class="gloss__term">${esc(t.term)}</div>
-        <div class="gloss__lang">${esc(t.lang)}</div>
-        <div class="gloss__meaning">${esc(t.meaning)}</div>
-        ${t.track ? `<div class="gloss__track">heard on · ${esc(t.track)}</div>` : ''}
-      </article>`).join('');
+    const terms = data.terms || [];
+    const wrap = $('#slangSearchWrap');
+    if (wrap) {
+      wrap.innerHTML = `<input type="search" id="slangSearch" placeholder="search slang…" autocomplete="off" aria-label="search slang dictionary">`;
+    }
+    const root = $('#slangRoot');
+    function render(list) {
+      root.innerHTML = list.map(t => `
+        <article class="gloss" data-lang="${esc(lower(t.lang))}">
+          <div class="gloss__term">${esc(t.term)}</div>
+          <div class="gloss__lang">${esc(t.lang)}</div>
+          <div class="gloss__meaning">${esc(t.meaning)}</div>
+          ${t.track ? `<div class="gloss__track">heard on · ${esc(t.track)}</div>` : ''}
+        </article>`).join('');
+    }
+    render(terms);
+    $('#slangSearch')?.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = terms.filter(t =>
+        !q || (t.term + t.meaning + t.lang + (t.track || '')).toLowerCase().includes(q)
+      );
+      render(filtered);
+    });
   }
 
   /* ============================================================
@@ -1444,12 +1757,33 @@
      ============================================================ */
   async function initTimeline() {
     const data = await (await fetch('/data/timeline.json')).json();
-    $('#tlRoot').innerHTML = data.milestones.map(m => `
-      <article class="tl-milestone">
-        <div class="tl-milestone__year">${m.year}</div>
-        <div class="tl-milestone__title">${esc(m.title)}</div>
-        <p class="tl-milestone__blurb">${esc(m.blurb)}</p>
-      </article>`).join('');
+    const milestones = data.milestones || [];
+    const decadeOf = (y) => `${Math.floor(Number(y) / 10) * 10}s`;
+    const decades = unique(milestones.map(m => decadeOf(m.year))).sort();
+    const filters = $('#tlFilters');
+    if (filters) {
+      filters.innerHTML = `
+        <div class="tl-filter-bar">
+          <button type="button" class="scope-tab is-active" data-decade="">all decades</button>
+          ${decades.map(d => `<button type="button" class="scope-tab" data-decade="${esc(d)}">${esc(d)}</button>`).join('')}
+        </div>`;
+    }
+    const root = $('#tlRoot');
+    function render(list) {
+      root.innerHTML = list.map(m => `
+        <article class="tl-milestone" data-decade="${esc(decadeOf(m.year))}">
+          <div class="tl-milestone__year">${m.year}</div>
+          <div class="tl-milestone__title">${esc(m.title)}</div>
+          <p class="tl-milestone__blurb">${esc(m.blurb)}</p>
+        </article>`).join('');
+    }
+    render(milestones);
+    $$('.tl-filter-bar .scope-tab', filters).forEach(btn => btn.addEventListener('click', () => {
+      $$('.scope-tab', filters).forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      const decade = btn.dataset.decade;
+      render(decade ? milestones.filter(m => decadeOf(m.year) === decade) : milestones);
+    }));
   }
 
   /* ============================================================
@@ -1457,61 +1791,149 @@
      ============================================================ */
   async function initCompare() {
     await loadArtists();
+    const ballots = await liveBallotCount();
     const params = new URLSearchParams(location.search);
-    const initA = params.get('a') || 'hanumankind';
-    const initB = params.get('b') || 'krsna';
+    let slugA = params.get('a') || 'hanumankind';
+    let slugB = params.get('b') || 'krsna';
 
-    const pickerOpts = [...ARTISTS].sort((x, y) => x.stage_name.localeCompare(y.stage_name))
-      .map(a => `<option value="${esc(a.slug)}">${esc(a.stage_name)}</option>`).join('');
+    function artistPickerHtml(id, label, val) {
+      return `
+        <div class="compare-picker">
+          <div class="compare-picker__head">${label}</div>
+          <input type="search" id="${id}" class="compare-picker__input" value="${esc(BY_SLUG[val]?.stage_name || '')}" data-slug="${esc(val)}" placeholder="search artist…" autocomplete="off" aria-label="${label}">
+          <div class="compare-picker__drop" id="${id}Drop" hidden></div>
+        </div>`;
+    }
+
     $('#compareWrap').innerHTML = `
       <div class="compare-pickers">
-        <div class="compare-picker">
-          <div class="compare-picker__head">left contender</div>
-          <select id="cmpA">${pickerOpts}</select>
-        </div>
-        <div class="compare-vs">vs</div>
-        <div class="compare-picker">
-          <div class="compare-picker__head">right contender</div>
-          <select id="cmpB">${pickerOpts}</select>
-        </div>
+        ${artistPickerHtml('cmpA', 'left contender', slugA)}
+        <button type="button" class="compare-swap" id="cmpSwap" aria-label="swap contenders">⇄</button>
+        ${artistPickerHtml('cmpB', 'right contender', slugB)}
       </div>
       <div id="cmpGrid"></div>`;
 
-    $('#cmpA').value = initA;
-    $('#cmpB').value = initB;
+    const actions = $('#compareActions');
+    if (actions) {
+      actions.innerHTML = `<button type="button" class="dice-btn" id="cmpRandom">random matchup</button>`;
+      $('#cmpRandom')?.addEventListener('click', () => {
+        const shuffled = [...ARTISTS].sort(() => Math.random() - 0.5);
+        slugA = shuffled[0].slug;
+        slugB = shuffled.find(a => a.slug !== slugA)?.slug || shuffled[1].slug;
+        syncPickers(); render();
+      });
+    }
+
+    function wirePicker(inputId, dropId, side) {
+      const input = $(inputId);
+      const drop = $(dropId);
+      const show = (q) => {
+        const matches = ARTISTS.filter(a => {
+          const hay = (a.stage_name + ' ' + (a.real_name || '')).toLowerCase();
+          return !q || hay.includes(q);
+        }).slice(0, 8);
+        drop.innerHTML = matches.map(a => `
+          <button type="button" class="compare-picker__opt" data-slug="${esc(a.slug)}">${esc(a.stage_name)} <span>${esc(lower(a.city_represented))}</span></button>`).join('');
+        drop.hidden = !matches.length;
+        $$('.compare-picker__opt', drop).forEach(btn => btn.addEventListener('click', () => {
+          if (side === 'a') slugA = btn.dataset.slug; else slugB = btn.dataset.slug;
+          input.value = BY_SLUG[btn.dataset.slug]?.stage_name || '';
+          input.dataset.slug = btn.dataset.slug;
+          drop.hidden = true;
+          render();
+        }));
+      };
+      input.addEventListener('focus', () => show(input.value.toLowerCase().trim()));
+      input.addEventListener('input', () => show(input.value.toLowerCase().trim()));
+      document.addEventListener('click', (e) => { if (!input.parentElement.contains(e.target)) drop.hidden = true; });
+    }
+    wirePicker('#cmpA', '#cmpADrop', 'a');
+    wirePicker('#cmpB', '#cmpBDrop', 'b');
+
+    function syncPickers() {
+      $('#cmpA').value = BY_SLUG[slugA]?.stage_name || '';
+      $('#cmpA').dataset.slug = slugA;
+      $('#cmpB').value = BY_SLUG[slugB]?.stage_name || '';
+      $('#cmpB').dataset.slug = slugB;
+    }
+
+    $('#cmpSwap')?.addEventListener('click', () => {
+      const t = slugA; slugA = slugB; slugB = t;
+      syncPickers(); render();
+    });
+
+    const shareLbl = rankShareLabel(ballots);
+    const tierLbl = tierLabelName();
+
     const render = () => {
-      const a = BY_SLUG[$('#cmpA').value];
-      const b = BY_SLUG[$('#cmpB').value];
+      const a = BY_SLUG[slugA], b = BY_SLUG[slugB];
       if (!a || !b) return;
+      if (slugA === slugB) { toast('pick two different artists'); return; }
       const total = totalVotes(ARTISTS);
       const sorted = [...ARTISTS].sort((x, y) => mockVotes(y) - mockVotes(x));
       const rk = (x) => sorted.findIndex(s => s.slug === x.slug) + 1;
+      const win = (va, vb, lowerBetter = false) => {
+        if (va === vb) return '';
+        const aWins = lowerBetter ? va < vb : va > vb;
+        return aWins ? 'is-winner' : 'is-loser';
+      };
+      const stats = [
+        { k: 'india rank', va: rk(a), vb: rk(b), fmt: v => `#${v}`, lowerBetter: true },
+        { k: shareLbl, va: pctOf(a, total), vb: pctOf(b, total), fmt: v => `${v.toFixed(2)}%` },
+        { k: tierLbl, va: displayTier(a), vb: displayTier(b), fmt: v => v, text: true },
+      ];
+      const mid = stats.map(s => {
+        if (s.text) return `<div class="compare-mid__row">${s.va === s.vb ? 'tie' : (s.lowerBetter ? (s.va < s.vb ? '←' : '→') : (s.va > s.vb ? '←' : '→'))}</div>`;
+        const diff = s.lowerBetter ? s.vb - s.va : s.va - s.vb;
+        return `<div class="compare-mid__row compare-mid__diff">${diff > 0 ? '+' : ''}${s.lowerBetter ? diff : diff.toFixed(2)}${s.fmt === (v => `#${v}`) ? '' : '%'}</div>`;
+      }).join('');
+
       $('#cmpGrid').innerHTML = `
-        <div class="compare-grid">
-          ${[a, b].map(x => `
-            <div class="compare-col">
-              <div class="compare-col__photo">${photoHtml(x)}</div>
-              <div class="compare-col__name">${esc(x.stage_name)}</div>
-              <div class="compare-col__sub">${esc([x.city_represented, x.era].filter(Boolean).join(' · ').toLowerCase())}</div>
-              <dl>
-                <dt>india rank</dt><dd class="numeric">#${rk(x)}</dd>
-                <dt>share of top-5s</dt><dd class="numeric">${pctOf(x, total).toFixed(2)}%</dd>
-                <dt>tier</dt><dd class="numeric">${esc(x.popularity_tier)}</dd>
-                <dt>label</dt><dd>${esc(x.label || 'independent')}</dd>
-                <dt>language</dt><dd>${esc((x.language || []).join(', ').toLowerCase() || '—')}</dd>
-                <dt>subgenre</dt><dd>${esc(x.subgenre.toLowerCase())}</dd>
-                <dt>tags</dt><dd>${esc((x.tags || []).join(' · '))}</dd>
-                <dt>three tracks</dt><dd>${esc((x.notable_tracks || []).slice(0,3).join(' · ') || '—')}</dd>
-              </dl>
-            </div>`).join('')}
+        <div class="compare-grid compare-grid--stats">
+          <div class="compare-col">
+            <div class="compare-col__photo">${photoHtml(a)}</div>
+            <div class="compare-col__name">${esc(a.stage_name)}</div>
+            <div class="compare-col__sub">${esc([a.city_represented, a.era].filter(Boolean).join(' · ').toLowerCase())}</div>
+            <dl>
+              <dt>india rank</dt><dd class="numeric ${win(rk(a), rk(b), true)}">#${rk(a)}</dd>
+              <dt>${esc(shareLbl)}</dt><dd class="numeric ${win(pctOf(a, total), pctOf(b, total))}">${pctOf(a, total).toFixed(2)}%</dd>
+              <dt>${esc(tierLbl)}</dt><dd class="numeric">${esc(displayTier(a))}</dd>
+              <dt>label</dt><dd>${esc(a.label || 'independent')}</dd>
+              <dt>language</dt><dd>${esc((a.language || []).join(', ').toLowerCase() || '—')}</dd>
+              <dt>subgenre</dt><dd>${esc(a.subgenre.toLowerCase())}</dd>
+              <dt>tags</dt><dd>${esc((a.tags || []).join(' · '))}</dd>
+              <dt>three tracks</dt><dd>${esc((a.notable_tracks || []).slice(0, 3).join(' · ') || '—')}</dd>
+            </dl>
+            <a class="feature__cta" href="/artist.html?slug=${esc(a.slug)}">open profile →</a>
+          </div>
+          <div class="compare-mid">${mid}</div>
+          <div class="compare-col">
+            <div class="compare-col__photo">${photoHtml(b)}</div>
+            <div class="compare-col__name">${esc(b.stage_name)}</div>
+            <div class="compare-col__sub">${esc([b.city_represented, b.era].filter(Boolean).join(' · ').toLowerCase())}</div>
+            <dl>
+              <dt>india rank</dt><dd class="numeric ${win(rk(b), rk(a), true)}">#${rk(b)}</dd>
+              <dt>${esc(shareLbl)}</dt><dd class="numeric ${win(pctOf(b, total), pctOf(a, total))}">${pctOf(b, total).toFixed(2)}%</dd>
+              <dt>${esc(tierLbl)}</dt><dd class="numeric">${esc(displayTier(b))}</dd>
+              <dt>label</dt><dd>${esc(b.label || 'independent')}</dd>
+              <dt>language</dt><dd>${esc((b.language || []).join(', ').toLowerCase() || '—')}</dd>
+              <dt>subgenre</dt><dd>${esc(b.subgenre.toLowerCase())}</dd>
+              <dt>tags</dt><dd>${esc((b.tags || []).join(' · '))}</dd>
+              <dt>three tracks</dt><dd>${esc((b.notable_tracks || []).slice(0, 3).join(' · ') || '—')}</dd>
+            </dl>
+            <a class="feature__cta" href="/artist.html?slug=${esc(b.slug)}">open profile →</a>
+          </div>
         </div>`;
-      // update URL
+      updatePageMeta({
+        title: `${a.stage_name} vs ${b.stage_name} · Rep`,
+        description: `Compare ${a.stage_name} and ${b.stage_name} — rank, ${shareLbl}, ${tierLbl}, tracks.`
+      });
       const url = new URL(location);
-      url.searchParams.set('a', a.slug); url.searchParams.set('b', b.slug);
+      url.searchParams.set('a', a.slug);
+      url.searchParams.set('b', b.slug);
       history.replaceState({}, '', url);
     };
-    $('#cmpA').addEventListener('change', render);
-    $('#cmpB').addEventListener('change', render);
+    syncPickers();
     render();
   }
 
@@ -1579,7 +2001,7 @@
         </button>`).join('');
       $$('.card', rootPool).forEach(card => {
         card.addEventListener('click', () => {
-          if (state.picks.length >= MAX) { alert('mixtape full · remove one to add another'); return; }
+          if (state.picks.length >= MAX) { toast('mixtape full · remove one to add another'); return; }
           // dedup: one slot per artist
           if (state.picks.some(p => p.slug === card.dataset.slug)) return;
           state.picks.push({ slug: card.dataset.slug, track: card.dataset.track });
@@ -1593,13 +2015,28 @@
 
     $('#mixtapeShuffle').addEventListener('click', renderPool);
     $('#mixtapeExport').addEventListener('click', () => {
-      if (!state.picks.length) { alert('add at least one track first'); return; }
+      if (!state.picks.length) { toast('add at least one track first'); return; }
       const lines = state.picks.map((p, i) => {
         const a = BY_SLUG[p.slug];
         return `${String(i+1).padStart(2,'0')}. ${p.track} · ${a?.stage_name || p.slug}`;
       });
       const txt = `MY DHH MIXTAPE · SIDE A\n\n${lines.join('\n')}\n\nrep.anirudhgoel.xyz/mixtape.html`;
-      navigator.clipboard.writeText(txt).then(() => alert('tracklist copied to clipboard.\n\n' + txt)).catch(() => alert(txt));
+      navigator.clipboard.writeText(txt).then(() => toast('tracklist copied to clipboard')).catch(() => toast(txt));
+    });
+    $('#mixtapePng')?.addEventListener('click', async () => {
+      if (!state.picks.length) { toast('add at least one track first'); return; }
+      const btn = $('#mixtapePng');
+      const orig = btn.textContent;
+      btn.disabled = true; btn.textContent = 'rendering sleeve…';
+      try {
+        const canvas = await buildMixtapeCard(state.picks);
+        showShareModal('your DHH mixtape · side A', canvas, 'rep-mixtape.png');
+      } catch (e) {
+        console.error(e);
+        toast('sleeve render failed · try again');
+      } finally {
+        btn.disabled = false; btn.textContent = orig;
+      }
     });
     $('#mixtapeClear').addEventListener('click', () => {
       if (!confirm('clear the mixtape?')) return;
@@ -2001,45 +2438,116 @@
     return c;
   }
 
+  async function buildMixtapeCard(picks) {
+    const W = 1080, H = 1350;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+    const pat = ctx.createPattern(paperPatternCanvas(), 'repeat');
+    ctx.fillStyle = pat;
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#0E0E10';
+    ctx.fillRect(0, 0, W, 280);
+    ctx.fillStyle = '#ED8B40';
+    ctx.fillRect(0, 0, W, 6);
+    ctx.fillStyle = '#F4EFE6';
+    ctx.font = '400 120px Anton, Impact, sans-serif';
+    ctx.fillText('MIXTAPE', 56, 90);
+    ctx.font = '500 20px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#ED8B40';
+    ctx.fillText('SIDE A · ' + picks.length + ' TRACKS', 56, 200);
+    ctx.textBaseline = 'top';
+    let y = 320;
+    for (let i = 0; i < picks.length; i++) {
+      const p = picks[i];
+      const a = BY_SLUG[p.slug];
+      ctx.fillStyle = '#1B1B1B';
+      ctx.font = '400 48px Anton, Impact, sans-serif';
+      ctx.fillText(String(i + 1).padStart(2, '0'), 56, y);
+      ctx.font = '500 22px "JetBrains Mono", monospace';
+      ctx.fillText((p.track || '').slice(0, 42), 140, y + 8);
+      ctx.fillStyle = '#6B6B6B';
+      ctx.fillText((a?.stage_name || p.slug).toLowerCase(), 140, y + 40);
+      y += 88;
+    }
+    ctx.fillStyle = '#1B1B1B';
+    ctx.fillRect(40, H - 70, W - 80, 1);
+    ctx.font = '500 18px "JetBrains Mono", monospace';
+    ctx.fillText('rep.anirudhgoel.xyz/mixtape.html', 64, H - 50);
+    return c;
+  }
+
+  function closeShareModal() {
+    const modal = $('#shareModal');
+    if (modal) {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
   function showShareModal(title, canvas, filename) {
     let modal = $('#shareModal');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'shareModal';
       modal.className = 'share-modal';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('aria-hidden', 'true');
       modal.innerHTML = `
         <div class="share-modal__inner">
           <div class="share-modal__head">
             <h3 class="share-modal__title" id="shareModalTitle"></h3>
-            <button class="share-modal__close" id="shareModalClose">×</button>
+            <button type="button" class="share-modal__close" id="shareModalClose" aria-label="close">×</button>
           </div>
           <div id="shareCanvasWrap"></div>
           <div class="share-modal__actions">
-            <button class="btn-stamp" id="downloadPng">download PNG →</button>
-            <button class="dice-btn" id="closeShare">close</button>
+            <button type="button" class="btn-stamp" id="downloadPng">download PNG →</button>
+            <button type="button" class="dice-btn" id="shareNative" hidden>share →</button>
+            <button type="button" class="dice-btn" id="closeShare">close</button>
           </div>
         </div>`;
       document.body.appendChild(modal);
-      modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('is-open'); });
-      $('#shareModalClose', modal).addEventListener('click', () => modal.classList.remove('is-open'));
-      $('#closeShare', modal).addEventListener('click', () => modal.classList.remove('is-open'));
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeShareModal(); });
+      $('#shareModalClose', modal).addEventListener('click', closeShareModal);
+      $('#closeShare', modal).addEventListener('click', closeShareModal);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) closeShareModal();
+      });
     }
     $('#shareModalTitle').textContent = title;
     const wrap = $('#shareCanvasWrap');
     wrap.innerHTML = '';
     canvas.className = 'share-modal__canvas';
     wrap.appendChild(canvas);
+    const nativeBtn = $('#shareNative');
+    if (nativeBtn && navigator.share && navigator.canShare) {
+      nativeBtn.hidden = false;
+      nativeBtn.onclick = () => {
+        canvas.toBlob(async (blob) => {
+          if (!blob) { toast('share unavailable on this device'); return; }
+          const file = new File([blob], filename || 'rep.png', { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            try { await navigator.share({ title, files: [file] }); } catch { /* cancelled */ }
+          } else toast('native share not supported here');
+        }, 'image/png');
+      };
+    } else if (nativeBtn) nativeBtn.hidden = true;
+
     $('#downloadPng').onclick = () => {
       canvas.toBlob((blob) => {
-        if (!blob) { alert('couldn\'t generate PNG. try downloading on a desktop.'); return; }
+        if (!blob) { toast('couldn\'t generate PNG · try on desktop'); return; }
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = filename || 'rep.png';
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        toast('PNG downloading');
       }, 'image/png');
     };
     modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    $('#shareModalClose')?.focus();
   }
 
 })();
