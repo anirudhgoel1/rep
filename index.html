@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Rep · the real DHH top 5</title>
-  <meta name="description" content="Build your DHH top 5. Tier the scene. Vote on India's live top 50. City pride, defend wall, daily 1v1, beef timeline, slang dictionary. Ranked by you. Arguments encouraged.">
+  <meta name="description" content="90 verified DHH artists. Build your top 5, tier the scene, city pride, defend wall, daily 1v1, beef timeline, slang dictionary. Seed rankings until ballots ship. Arguments encouraged.">
   <meta name="theme-color" content="#F4EFE6">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://rep.anirudhgoel.xyz/">
   <meta property="og:title" content="Rep · the real DHH top 5">
-  <meta property="og:description" content="Build your DHH top 5. Tier the scene. Vote on India's live top 50.">
+  <meta property="og:description" content="90 verified DHH artists. Build your top 5, tier the scene, city pride. Seed until ballots ship.">
   <meta property="og:image" content="https://rep.anirudhgoel.xyz/og.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Rep · the real DHH top 5">
-  <meta name="twitter:description" content="Build your DHH top 5. Tier the scene. Vote on India's live top 50.">
+  <meta name="twitter:description" content="90 verified DHH artists. Build your top 5, tier the scene, city pride. Seed until ballots ship.">
   <meta name="twitter:image" content="https://rep.anirudhgoel.xyz/og.png">
 
   <link rel="canonical" href="https://rep.anirudhgoel.xyz/">
@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=PT+Serif:ital,wght@1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500&family=Noto+Sans+Devanagari:wght@400;700&display=swap">
 
-  <link rel="stylesheet" href="/styles.css?v=20260521-b2">
+  <link rel="stylesheet" href="/styles.css?v=20260608-1">
   <script src="/assets/vendor/gsap.min.js" defer></script>
   <script src="/assets/vendor/ScrollTrigger.min.js" defer></script>
 
@@ -39,7 +39,7 @@
     "name": "Rep",
     "url": "https://rep.anirudhgoel.xyz/",
     "applicationCategory": "EntertainmentApplication",
-    "description": "Build your DHH top 5. Tier the scene. Vote on India's live top 50.",
+    "description": "90 verified DHH artists. Build your top 5, tier the scene, city pride.",
     "creator": { "@type": "Person", "name": "Anirudh Goel" }
   }
   </script>
@@ -60,13 +60,13 @@
         <span class="chapter__rule"></span>
       </div>
       <h1 class="hero-dark__rep">REP<span class="tilt"></span></h1>
-      <p class="hero-dark__tagline">the <span class="kw">asli</span> DHH top 5. ranked by pen game. arguments encouraged.</p>
+      <p class="hero-dark__tagline">the <span class="kw">asli</span> DHH top 5. <span id="heroRankNote">pen-game seed until you vote</span>. arguments encouraged.</p>
       <div class="hero-dark__cta">
         <a href="/build.html" class="btn-dark-primary">drop your top 5</a>
         <a href="#what-you-can-do" class="btn-dark-ghost">see what you can do ↓</a>
       </div>
       <div class="hero-dark__stats">
-        <div class="col"><span>artists</span><strong>85</strong></div>
+        <div class="col"><span>artists</span><strong data-roster-count>90</strong></div>
         <div class="col"><span>cities</span><strong>10</strong></div>
         <div class="col"><span>labels</span><strong>10</strong></div>
         <div class="col"><span>cyphers</span><strong>04</strong></div>
@@ -101,7 +101,7 @@
       <div class="feature__body">
         <div class="feature__num">01</div>
         <h3 class="feature__title">drop your <span style="color: var(--burn);">top 5</span></h3>
-        <p class="feature__copy">pick five from 85 verified DHH artists. drag, tap, reorder. filter by city, era, language, subgenre. defend your number one in 140 characters. lock it in and the PNG card auto-renders for the post.</p>
+        <p class="feature__copy">pick five from 90 verified DHH artists. drag, tap, reorder. filter by city, era, language, subgenre. defend your number one in 140 characters. lock it in and the PNG card auto-renders for the post.</p>
         <a class="feature__cta" href="/build.html">open the builder</a>
       </div>
       <div class="feature__mockup">
@@ -113,7 +113,7 @@
       <div class="feature__body">
         <div class="feature__num">02</div>
         <h3 class="feature__title">tier the <span style="color: var(--burn);">whole scene</span></h3>
-        <p class="feature__copy">drag any of the 85 into S, A, B, C, D. autosaves locally. export as a designer-tier shareable PNG with photos and tier blocks the size of an actual tier list. argue with science.</p>
+        <p class="feature__copy">drag any of the 90 into S, A, B, C, D. autosaves locally. export as a designer-tier shareable PNG with photos and tier blocks the size of an actual tier list. argue with science.</p>
         <a class="feature__cta" href="/tier.html">make a tier list</a>
       </div>
       <div class="feature__mockup">
@@ -158,12 +158,12 @@
     </div>
     <div class="section__head">
       <h2 class="section__title">the <span class="burn">pen game</span> top five</h2>
-      <p class="section__meta"><span class="live">crossovers buried · streams toggle in /leaderboard</span></p>
+      <p class="section__meta"><span class="live" id="landingRankNote">crossovers buried · seed ranking until ballots land</span> · <a href="/leaderboard.html">streams toggle</a></p>
     </div>
     <ol class="tickets" id="tickets">
       <li class="ticket"><span class="ticket__rank">--</span><span class="ticket__body"><span class="ticket__name">loading roster…</span><span class="ticket__city">one moment</span></span></li>
     </ol>
-    <a href="/leaderboard.html" class="see-all">open the full top 85 →</a>
+    <a href="/leaderboard.html" class="see-all">open the full top 90 →</a>
   </section>
 
   <!-- CHAPTER 03 · REP YOUR CITY ---------------------------- -->
@@ -175,7 +175,7 @@
     </div>
     <div class="section__head" style="margin-bottom: 32px;">
       <h2 class="section__title">nine <span class="burn">doors</span></h2>
-      <p class="section__meta">85 artists · 10 cities · neighborhoods produce sounds</p>
+      <p class="section__meta"><span data-roster-count>90</span> artists · 10 cities · neighborhoods produce sounds</p>
     </div>
     <div class="bento-cities" id="cityBento">
       <p class="empty-grid" style="color: var(--ash);">loading the cities…</p>
@@ -222,7 +222,7 @@
     </div>
     <div class="section__head">
       <h2 class="section__title">two artists. <span class="burn">one tap.</span></h2>
-      <p class="section__meta">fresh matchup every day · vote opens with the backend</p>
+      <p class="section__meta">fresh matchup every day · one vote per head</p>
     </div>
     <div class="duel">
       <div class="duel__side">
@@ -251,8 +251,8 @@
       <h2 class="section__title">say it <span class="burn">louder</span></h2>
       <p class="section__meta">one line per pick · 140 chars max · upvote what reads true</p>
     </div>
-    <p style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); margin-bottom: 56px; max-width: 720px;">
-      example format below · the wall opens for real submissions when the backend ships.
+    <p id="defendNote" style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); margin-bottom: 56px; max-width: 720px;">
+      drop your defense from the builder · upvote the takes that read true.
     </p>
     <div class="defend-list">
       <figure class="quote">
@@ -277,13 +277,27 @@
         </figcaption>
       </figure>
     </div>
+
+    <!-- who's missing · fans argue the roster itself -->
+    <div class="suggest" id="suggestBox" hidden>
+      <div class="suggest__head">
+        <h3 class="suggest__title">who's <span class="burn">missing?</span></h3>
+        <span class="suggest__hint">name a rapper the roster skipped · the most-upvoted get admitted</span>
+      </div>
+      <form class="suggest__form" id="suggestForm">
+        <input type="text" id="suggestName" placeholder="stage name" maxlength="60" autocomplete="off" required>
+        <input type="text" id="suggestWhy" placeholder="why they belong (optional)" maxlength="200" autocomplete="off">
+        <button type="submit" class="dice-btn" id="suggestSubmit">submit</button>
+      </form>
+      <ul class="suggest__list" id="suggestList"></ul>
+    </div>
   </section>
 
   <!-- footer -->
   <footer class="foot">
     <div class="foot__row">
       <span class="foot__mark">rep<span class="dot"></span></span>
-      <span class="foot__line">85 artists. 10 cities deep. ranked by the heads, not the algorithm.</span>
+      <span class="foot__line"><span data-roster-count>90</span> artists. 10 cities deep. seed rankings until you vote — then the heads decide.</span>
     </div>
     <div class="foot__row">
       <span class="foot__tip">built with respect. <a href="upi://pay?pa=7814769892@yescred&pn=Anirudh%20Goel&cu=INR" id="upiLink">tip via upi →</a></span>
@@ -293,6 +307,6 @@
 
 </div>
 
-<script src="/app.js?v=20260521-b2" defer></script>
+<script src="/app.js?v=20260608-1" defer></script>
 </body>
 </html>

@@ -1,3 +1,7 @@
+# Production deploy · static assets only (matches live rep.anirudhgoel.xyz).
+# Ships data/artists.json (90), bios, HTML, CSS, JS. No Worker API on prod yet.
+# API + D1: see wrangler.api.toml · npm run deploy:api
+
 name = "rep"
 compatibility_date = "2026-05-20"
 workers_dev = true

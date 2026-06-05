@@ -1,0 +1,22 @@
+{
+  "name": "rep",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen:seed": "node scripts/gen-seed.mjs",
+    "preflight": "node scripts/preflight.mjs",
+    "bump": "node scripts/bump-version.mjs",
+    "verify:wiki": "node scripts/verify-wikipedia.mjs",
+    "smoke:api": "node scripts/smoke-api.mjs",
+    "render:og": "node scripts/render-og.mjs",
+    "db:local": "wrangler d1 execute rep-db --local --config wrangler.api.toml --file=db/0001_init.sql && wrangler d1 execute rep-db --local --config wrangler.api.toml --file=db/0002_seed_artists.sql",
+    "db:remote": "wrangler d1 execute rep-db --remote --config wrangler.api.toml --file=db/0001_init.sql && wrangler d1 execute rep-db --remote --config wrangler.api.toml --file=db/0002_seed_artists.sql",
+    "dev": "wrangler dev --local --port 8787 --config wrangler.api.toml",
+    "deploy": "wrangler deploy",
+    "deploy:api": "wrangler deploy --config wrangler.api.toml"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5",
+    "wrangler": "^3.90.0"
+  }
+}

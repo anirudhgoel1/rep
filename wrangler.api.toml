@@ -1,0 +1,26 @@
+# Full stack · Worker API + D1 + static assets (local / after D1 is wired).
+# Dev: npm run dev
+# Deploy: npm run deploy:api  (requires database_id below)
+
+name = "rep"
+main = "src/worker.js"
+compatibility_date = "2026-05-20"
+workers_dev = true
+preview_urls = true
+
+[assets]
+directory = "./"
+not_found_handling = "404-page"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rep-db"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[[routes]]
+pattern = "rep.anirudhgoel.xyz"
+custom_domain = true
+
+[observability]
+enabled = true

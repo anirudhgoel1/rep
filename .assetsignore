@@ -10,11 +10,17 @@ node_modules/
 *.log
 
 wrangler.toml
+wrangler.api.toml
+wrangler.static.toml
 package.json
 package-lock.json
 README.md
 README.deploy.md
+PROJECT.md
+.preview-server.mjs
 
+src/
+db/
 scripts/
 _drafts/
 design-preview/

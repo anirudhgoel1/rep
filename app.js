@@ -29,13 +29,49 @@
   /* one-time data load · resolves once, all pages share ---- */
   let ARTISTS = null;
   let BY_SLUG = null;
+  let ROSTER_META = {};
+  let LIVE_BALLOTS;
   async function loadArtists() {
     if (ARTISTS) return ARTISTS;
-    const r = await fetch('/data/artists.json');
+    const r = await fetch('/data/artists.json?v=20260608-1');
     const j = await r.json();
+    ROSTER_META = j._meta || {};
     ARTISTS = (j.artists || []).filter(a => a.is_votable !== 0);
     BY_SLUG = Object.fromEntries(ARTISTS.map(a => [a.slug, a]));
+    syncRosterCountUI();
     return ARTISTS;
+  }
+  async function liveBallotCount() {
+    if (LIVE_BALLOTS !== undefined) return LIVE_BALLOTS;
+    if (API_LIVE === false) { LIVE_BALLOTS = 0; return 0; }
+    try {
+      const live = await API.get('/leaderboard?type=top5&scope=all');
+      LIVE_BALLOTS = Number(live?.ballots) || 0;
+    } catch { LIVE_BALLOTS = 0; }
+    return LIVE_BALLOTS;
+  }
+  function rankFootnote(ballots) {
+    const mode = rankMode();
+    if (ballots > 0 && mode === 'respect') {
+      return `${ballots.toLocaleString('en-IN')} community ballot${ballots === 1 ? '' : 's'} counted`;
+    }
+    if (mode === 'streams') return 'editorial stream estimate · not community-voted';
+    if (API_LIVE === false) return 'seed ranking · ballots API offline · from respect tier until deploy';
+    return 'seed ranking · no ballots yet · from respect tier until you vote';
+  }
+  function rankShareLabel(ballots) {
+    const mode = rankMode();
+    if (ballots > 0 && mode === 'respect') return 'share of top-5s';
+    return mode === 'respect' ? 'pen-game seed share' : 'streams seed share';
+  }
+  function rosterCount() {
+    return ROSTER_META.total_artists || (ARTISTS ? ARTISTS.length : 90);
+  }
+  function syncRosterCountUI() {
+    const n = rosterCount();
+    $$('[data-roster-count]').forEach(el => { el.textContent = String(n); });
+    const ph = document.querySelector('#gsearch input[type=search]');
+    if (ph) ph.placeholder = `search ${n} artists…`;
   }
 
   /* ranking · respect_tier (hardcore DHH cred) is the DEFAULT.
@@ -88,6 +124,71 @@
     const tags = a.tags || [];
     return (a.era === 'OG' && a.subgenre === 'Pop-Rap') ||
            (tags.includes('mainstream') && tags.includes('OG'));
+  }
+
+  /* ============================================================
+     API client · the real backend (Cloudflare Worker + D1).
+     Every call degrades gracefully: if the worker isn't there
+     (e.g. pure static preview) features fall back to local/seed
+     behaviour instead of breaking.
+     ============================================================ */
+  const API = {
+    async call(path, opts = {}) {
+      const init = { credentials: 'same-origin', ...opts };
+      if (opts.body != null && typeof opts.body !== 'string') {
+        init.body = JSON.stringify(opts.body);
+        init.headers = { 'content-type': 'application/json', ...(opts.headers || {}) };
+      }
+      const r = await fetch('/api' + path, init);
+      if (!r.ok) throw new Error('api ' + r.status);
+      return r.json();
+    },
+    get(path) { return this.call(path); },
+    post(path, body) { return this.call(path, { method: 'POST', body: body || {} }); },
+  };
+  let _apiUp = null;
+  let _apiDb = null;
+  let API_LIVE = null;
+  function renderApiStatusBanner() {
+    if ($('#apiStatusBanner')) return;
+    const bar = document.createElement('p');
+    bar.id = 'apiStatusBanner';
+    bar.className = 'api-status';
+    bar.hidden = true;
+    bar.setAttribute('role', 'status');
+    const topbar = $('#topbar');
+    if (topbar?.parentElement) topbar.parentElement.insertAdjacentElement('afterend', bar);
+    else document.body.prepend(bar);
+  }
+  function syncApiStatusUI() {
+    const el = $('#apiStatusBanner');
+    if (!el || API_LIVE === null) return;
+    el.hidden = false;
+    el.className = 'api-status ' + (API_LIVE ? 'api-status--live' : 'api-status--seed');
+    el.textContent = API_LIVE
+      ? 'ballots API live · votes count on the board'
+      : 'seed mode · rankings are editorial until ballots API is deployed';
+  }
+  async function apiUp() {
+    if (_apiUp !== null) return _apiUp;
+    try {
+      const h = await API.get('/health');
+      _apiUp = !!(h && h.ok);
+      _apiDb = !!(h && h.db);
+      API_LIVE = _apiUp;
+    } catch {
+      _apiUp = false;
+      _apiDb = false;
+      API_LIVE = false;
+    }
+    syncApiStatusUI();
+    return _apiUp;
+  }
+  async function syncRankingFootnotes() {
+    await loadArtists();
+    const ballots = await liveBallotCount();
+    const foot = rankFootnote(ballots);
+    $$('[data-rank-footnote]').forEach(el => { el.textContent = foot; });
   }
 
   /* photo rendering · graceful fallback to initials --------- */
@@ -144,17 +245,19 @@
       <nav class="topbar__nav" aria-label="primary">
         <a href="/build.html" class="${isActive('/build.html') ? 'is-active' : ''}">drop 5</a>
         <a href="/tier.html" class="${isActive('/tier.html') ? 'is-active' : ''}">tier</a>
-        <a href="/leaderboard.html" class="${isActive('/leaderboard.html') ? 'is-active' : ''}">top 85</a>
+        <a href="/leaderboard.html" class="${isActive('/leaderboard.html') ? 'is-active' : ''}">top ${rosterCount()}</a>
         <a href="/mixtape.html" class="${isActive('/mixtape.html') ? 'is-active' : ''}">mixtape</a>
         <a href="/compare.html" class="${isActive('/compare.html') ? 'is-active' : ''}">compare</a>
       </nav>
       <div class="gsearch" id="gsearch">
-        <input type="search" placeholder="search 85 artists…" aria-label="search" autocomplete="off">
+        <input type="search" placeholder="search artists…" aria-label="search" autocomplete="off">
         <div class="gsearch__results" id="gsearchResults"></div>
       </div>`;
     initSearch();
   }
+  renderApiStatusBanner();
   renderTopbar();
+  apiUp().then(() => syncRankingFootnotes());
 
   /* ============================================================
      global search · autocomplete
@@ -278,6 +381,17 @@
      ============================================================ */
   async function initLanding() {
     await loadArtists();
+    const ballots = await liveBallotCount();
+    const rankNote = $('#landingRankNote');
+    if (rankNote) rankNote.textContent = rankFootnote(ballots);
+    const heroTag = $('#heroRankNote');
+    if (heroTag) {
+      heroTag.textContent = ballots > 0
+        ? `${ballots.toLocaleString('en-IN')} ballots in · pen game live`
+        : (API_LIVE === false
+            ? 'pen-game seed · ballots API offline'
+            : 'pen-game seed until you drop a top 5');
+    }
 
     // top 5 · HARDCORE ONLY · landing front door never shows crossovers
     const pool = hardcorePool(ARTISTS);
@@ -297,7 +411,7 @@
               </a>
               <span class="ticket__city">${esc(lower(a.city_represented))}${a.active_status === 'RIP' ? ' · r.i.p.' : ''}</span>
             </span>
-            <span class="ticket__stat"><span class="pct">${pct}%</span>${rankMode() === 'respect' ? 'pen-game share' : 'streams share'}</span>
+            <span class="ticket__stat"><span class="pct">${pct}%</span>${rankShareLabel(ballots)}</span>
           </li>`;
       }).join('');
     }
@@ -402,38 +516,77 @@
     } catch {}
 
     // daily 1v1 · hardcore matchups, no crossovers in the rotation
-    const duelSeed = Math.floor(Date.now() / 86400000);
-    const cityVar = duelSeed % 4;
-    const pairs = [
+    // daily 1v1 · real, votable matchup from the backend. falls back to a
+    // deterministic seed pair when the worker isn't running (static preview).
+    const seedPairs = [
       ['krsna', 'seedhe-maut', 'delhi pen game · solo vs duo'],
       ['hanumankind', 'mc-altaf', 'global trap vs dharavi street'],
       ['yashraj', 'the-siege', 'mumbai new wave · two pens'],
       ['divine', 'naezy', 'the gully wave · founder vs cult OG']
     ];
-    const p = pairs[cityVar];
-    const aa = BY_SLUG[p[0]], bb = BY_SLUG[p[1]];
+    const seedPair = seedPairs[Math.floor(Date.now() / 86400000) % seedPairs.length];
     const duel = $('.duel');
     const duelTheme = $('.duel__theme');
-    if (duel && aa && bb) {
-      duel.innerHTML = `
-        <div class="duel__side">
-          <div class="duel__photo">${photoHtml(aa)}</div>
-          <div class="duel__name">${esc(aa.stage_name)}</div>
-          <div class="duel__city">${esc(lower(aa.city_represented))}</div>
-        </div>
-        <div class="duel__vs">vs</div>
-        <div class="duel__side">
-          <div class="duel__photo">${photoHtml(bb)}</div>
-          <div class="duel__name">${esc(bb.stage_name)}</div>
-          <div class="duel__city">${esc(lower(bb.city_represented))}</div>
-        </div>`;
-      if (duelTheme) duelTheme.innerHTML = `${esc(p[2])} · vote opens when the backend ships.`;
-      // adjust duel photo style to show images
-      $$('.duel__photo', duel).forEach(el => {
-        el.style.padding = '0';
-        el.style.overflow = 'hidden';
-      });
+    if (duel) {
+      let daily = null;
+      try { daily = await API.get('/daily'); } catch { /* offline → seed pair */ }
+      const live = !!daily;
+      const aSlug = live ? daily.artist_a : seedPair[0];
+      const bSlug = live ? daily.artist_b : seedPair[1];
+      const theme = live ? daily.theme : seedPair[2];
+      const aa = BY_SLUG[aSlug], bb = BY_SLUG[bSlug];
+      const st = {
+        voted: live ? daily.voted : false,
+        pick: live ? daily.pick : null,
+        va: live ? daily.votes_a : 0,
+        vb: live ? daily.votes_b : 0,
+      };
+      if (aa && bb) {
+        const sideStyle = 'text-align:left; width:100%;';
+        const paint = () => {
+          const tot = st.va + st.vb;
+          const showRes = st.voted;
+          const pa = tot ? Math.round(st.va / tot * 100) : 0;
+          const pb = tot ? Math.round(st.vb / tot * 100) : 0;
+          const tag = (slug, pct, n) =>
+            (showRes ? ` · ${pct}%` : '') + (st.pick === slug ? ' · your pick' : '');
+          duel.innerHTML = `
+            <button class="duel__side" data-slug="${esc(aSlug)}" ${st.voted ? 'disabled' : ''} style="${sideStyle}">
+              <div class="duel__photo">${photoHtml(aa)}</div>
+              <div class="duel__name">${esc(aa.stage_name)}</div>
+              <div class="duel__city">${esc(lower(aa.city_represented))}${tag(aSlug, pa, st.va)}</div>
+            </button>
+            <div class="duel__vs">vs</div>
+            <button class="duel__side" data-slug="${esc(bSlug)}" ${st.voted ? 'disabled' : ''} style="${sideStyle}">
+              <div class="duel__photo">${photoHtml(bb)}</div>
+              <div class="duel__name">${esc(bb.stage_name)}</div>
+              <div class="duel__city">${esc(lower(bb.city_represented))}${tag(bSlug, pb, st.vb)}</div>
+            </button>`;
+          $$('.duel__photo', duel).forEach(el => { el.style.padding = '0'; el.style.overflow = 'hidden'; });
+          if (!st.voted) {
+            $$('.duel__side', duel).forEach(side => side.addEventListener('click', async () => {
+              const pick = side.dataset.slug;
+              try {
+                const res = await API.post('/daily/vote', { pick });
+                st.va = res.votes_a; st.vb = res.votes_b; st.pick = res.pick;
+              } catch {
+                if (pick === aSlug) st.va++; else st.vb++; st.pick = pick;
+              }
+              st.voted = true; paint();
+              if (duelTheme) duelTheme.innerHTML = `${esc(theme)} · you voted · one vote per head`;
+            }));
+          }
+        };
+        paint();
+        if (duelTheme) duelTheme.innerHTML = live
+          ? `${esc(theme)} · tap a side · one vote per head${st.voted ? ' · you voted' : ''}`
+          : `${esc(theme)} · preview pair · votes stay local until API ships`;
+      }
     }
+
+    // community write-back · real defend wall + "who's missing" suggestions
+    wireDefendWall();
+    wireSuggestions();
 
     // feature showcase mockups · dense, photo-driven, no empty paper
     renderFeatureMockups();
@@ -449,7 +602,7 @@
         const total = totalVotes(hardcorePool(ARTISTS));
         m1.innerHTML = `
           <div class="mockup-top5__hdr">
-            <span>top 5 · live</span>
+            <span>top 5 · ${API_LIVE ? 'live' : 'seed'}</span>
             <span class="mockup-top5__hdr-side">pen game</span>
           </div>
           ${top5.map((a, i) => {
@@ -507,7 +660,7 @@
         Delhi: { artists: ARTISTS.filter(a => a.state === 'Delhi NCR' && !a.is_crossover), tag: 'lyrical wave', sub: 'the conscious heartbeat', size: 'med' },
         Punjab: { artists: ARTISTS.filter(a => a.state === 'Punjab' && !a.is_crossover), tag: 'parallel kingdom', sub: 'wazir · sikander · big boi · jelo', size: 'med' },
         Bengaluru: { artists: ARTISTS.filter(a => a.city_represented === 'Bengaluru' && !a.is_crossover), tag: 'global lane', sub: 'hanumankind broke through', size: 'sm' },
-        Pune: { artists: ARTISTS.filter(a => a.city_represented === 'Pune' && !a.is_crossover), tag: 'drill capital', sub: 'mc stan to vijay dk', size: 'sm' },
+        Pune: { artists: ARTISTS.filter(a => a.city_represented === 'Pune' && !a.is_crossover), tag: 'drill capital', sub: 'mc stan · stan wave', size: 'sm' },
         Northeast: { artists: ARTISTS.filter(a => NE.includes(a.state) && !a.is_crossover), tag: 'northeast nucleus', sub: 'eight states. 18 artists.', size: 'sm', href: '/city.html?city=Northeast' },
         Chennai: { artists: ARTISTS.filter(a => a.city_represented === 'Chennai' && !a.is_crossover), tag: 'tamil wave', sub: 'paal dabba global', size: 'xs' },
         Ahmedabad: { artists: ARTISTS.filter(a => a.city_represented === 'Ahmedabad' && !a.is_crossover), tag: 'gujarati pen', sub: 'dhanji solo', size: 'xs' },
@@ -732,6 +885,18 @@
       };
       localStorage.setItem('rep:last_top5', JSON.stringify(payload));
 
+      // submit the ballot to the live board (counts toward the live top-N).
+      // non-blocking + best-effort: a render failure must never lose the card.
+      try {
+        const res = await API.post('/lists', {
+          type: 'top5',
+          picks: payload.picks,
+          defense: state.defense || null,
+          username: state.handle || null,
+        });
+        if (res && res.id) localStorage.setItem('rep:last_ballot_id', res.id);
+      } catch (e) { /* offline / static preview — card still renders below */ }
+
       // build the share card PNG
       const btn = $('#lockBtn');
       const orig = btn.textContent;
@@ -755,6 +920,7 @@
      ============================================================ */
   async function initArtist() {
     await loadArtists();
+    const ballots = await liveBallotCount();
     const slug = new URLSearchParams(location.search).get('slug');
     const a = BY_SLUG[slug];
     if (!a) { $('#artistRoot').innerHTML = '<p class="empty-grid">artist not found. check the link.</p>'; return; }
@@ -762,7 +928,7 @@
     // load bios in parallel; ok if missing
     let bio = null;
     try {
-      const biosData = await (await fetch('/data/bios.json')).json();
+      const biosData = await (await fetch('/data/bios.json?v=20260608-1')).json();
       bio = biosData.bios?.[slug] || null;
     } catch {}
 
@@ -815,7 +981,7 @@
           ${photoHtml(a)}
         </div>
         <div class="artist-meta">
-          <div class="artist-meta__kicker">${a.active_status === 'RIP' ? '· r.i.p. ·' : 'currently active · ranked by you'}</div>
+          <div class="artist-meta__kicker">${a.active_status === 'RIP' ? '· r.i.p. ·' : esc(rankFootnote(ballots))}</div>
           <h1 class="artist-meta__name">${esc(a.stage_name)}</h1>
           <p class="artist-meta__sub">${esc(subBits.join(' · '))}</p>
           ${a.note ? `<p style="font-family: var(--font-serif); font-size: 16px; color: var(--ink-soft); line-height: 1.5;">${esc(a.note)}</p>` : ''}
@@ -829,8 +995,9 @@
             <div class="row"><span>india rank</span><strong>#${rank}</strong></div>
             <div class="row"><span>in ${esc(lower(a.city_represented))}</span><strong>#${cityRank}</strong></div>
             <div class="row"><span>in ${esc(lower(a.era))}</span><strong>#${eraRank}</strong></div>
-            <div class="row"><span>share of top-5s</span><strong>${pct}%</strong></div>
+            <div class="row"><span>${esc(rankShareLabel(ballots))}</span><strong>${pct}%</strong></div>
           </div>
+          ${ROSTER_META.data_audit_at ? `<p class="artist-meta__verified">roster facts last verified ${esc(ROSTER_META.data_audit_at)}</p>` : ''}
         </div>
       </div>
 
@@ -1047,16 +1214,124 @@
   }
 
   /* ============================================================
-     leaderboard · full 85 with mock votes
+     leaderboard · full roster with mock votes
      ============================================================ */
+  /* defend wall · replace the seed examples with real submitted defenses.
+     keeps the example takes when the backend is offline or empty. */
+  async function wireDefendWall() {
+    const list = $('.defend-list');
+    if (!list) return;
+    let takes = [];
+    try { takes = await API.get('/defend?sort=top&limit=12'); } catch { return; }
+    if (!Array.isArray(takes) || !takes.length) return;
+
+    const note = $('#defendNote');
+    if (note) note.textContent = 'top takes from the wall · drop yours from the builder · upvote what reads true.';
+
+    list.innerHTML = takes.map(t => {
+      const a = BY_SLUG[t.defending];
+      const who = a ? a.stage_name : (t.defending || 'their #1');
+      const handle = t.username ? '@' + t.username : 'a head';
+      return `
+        <figure class="quote" data-id="${esc(t.id)}">
+          <p class="quote__text">${esc(t.defense)}</p>
+          <figcaption class="quote__meta">
+            <span class="defending">defending ${esc(lower(who))} · ${esc(handle)}</span>
+            <button class="quote__up ${t.voted ? 'is-up' : ''}" data-id="${esc(t.id)}">▲ ${t.upvotes}</button>
+          </figcaption>
+        </figure>`;
+    }).join('');
+
+    $$('.quote__up', list).forEach(btn => btn.addEventListener('click', async () => {
+      try {
+        const r = await API.post('/lists/' + btn.dataset.id + '/upvote');
+        btn.textContent = '▲ ' + r.upvotes;
+        btn.classList.toggle('is-up', r.voted);
+      } catch { /* offline */ }
+    }));
+  }
+
+  /* "who's missing" · fans nominate artists the roster skipped, and upvote others.
+     only shows when the backend is live (it's a pure write-back feature). */
+  async function wireSuggestions() {
+    const box = $('#suggestBox');
+    if (!box) return;
+    if (!(await apiUp()) || !_apiDb) return; // needs worker + D1
+    box.hidden = false;
+
+    const listEl = $('#suggestList');
+    const form = $('#suggestForm');
+
+    async function refresh() {
+      let rows = [];
+      try { rows = await API.get('/suggestions?limit=20'); } catch { return; }
+      listEl.innerHTML = (rows || []).map(s => `
+        <li class="suggest__item">
+          <span class="suggest__main">
+            <span class="suggest__name">${esc(s.stage_name)}</span>
+            ${s.justification ? `<span class="suggest__why">${esc(s.justification)}</span>` : ''}
+          </span>
+          <button class="suggest__up" data-id="${esc(s.id)}">▲ ${s.upvotes}</button>
+        </li>`).join('');
+      $$('.suggest__up', listEl).forEach(btn => btn.addEventListener('click', async () => {
+        try { const r = await API.post('/suggestions/' + btn.dataset.id + '/upvote'); btn.textContent = '▲ ' + r.upvotes; } catch {}
+      }));
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = $('#suggestName').value.trim();
+      if (!name) return;
+      const why = $('#suggestWhy').value.trim();
+      const btn = $('#suggestSubmit');
+      btn.disabled = true; const orig = btn.textContent; btn.textContent = 'sent ✓';
+      try {
+        await API.post('/suggestions', { stage_name: name, justification: why || null });
+        $('#suggestName').value = ''; $('#suggestWhy').value = '';
+        await refresh();
+      } catch { btn.textContent = 'retry'; }
+      finally { setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 1200); }
+    });
+
+    refresh();
+  }
+
   async function initLeaderboard() {
     await loadArtists();
     const mode = rankMode();
     // basePool · respects rank mode (default = no crossovers)
     const basePool = mode === 'streams' ? ARTISTS : ARTISTS.filter(a => !a.is_crossover);
-    const total = totalVotes(basePool);
-    const sorted = [...basePool].sort((x, y) => mockVotes(y) - mockVotes(x));
-    $('#lbTotal').textContent = `${total.toLocaleString('en-IN')} simulated votes · ranked by ${mode === 'respect' ? 'pen game' : 'streams'}`;
+    const seedTotal = totalVotes(basePool);
+
+    // pen-game board = real community ballots. streams board stays an editorial
+    // estimate (we don't have stream APIs). pull the live tally for pen game.
+    let pointsBySlug = {};
+    let ballots = 0;
+    if (mode === 'respect') {
+      try {
+        const live = await API.get('/leaderboard?type=top5&scope=all');
+        if (live && Array.isArray(live.rows)) {
+          live.rows.forEach(r => { pointsBySlug[r.slug] = r.points; });
+          ballots = live.ballots || 0;
+        }
+      } catch { /* worker offline → seed ranking */ }
+    }
+    const usingLive = mode === 'respect' && ballots > 0;
+    const totalPoints = Object.values(pointsBySlug).reduce((s, p) => s + p, 0) || 1;
+
+    // honest header: live ballot count, or seed ranking, or stream estimate
+    $('#lbTotal').textContent = usingLive
+      ? `live · ${ballots.toLocaleString('en-IN')} ballot${ballots === 1 ? '' : 's'} counted · ranked by the heads`
+      : (mode === 'respect'
+          ? (API_LIVE === false
+              ? 'seed ranking · ballots API offline — order is editorial until deploy'
+              : 'seed ranking · no ballots yet — be the first to drop a top 5')
+          : 'editorial stream estimate · not community-voted');
+
+    const liveScore = (a) => pointsBySlug[a.slug] || 0;
+    const sortPool = (pool) => usingLive
+      ? [...pool].sort((x, y) => (liveScore(y) - liveScore(x)) || (mockVotes(y) - mockVotes(x)))
+      : [...pool].sort((x, y) => mockVotes(y) - mockVotes(x));
 
     // top-level mode toggle
     const modeToggle = $('#lbModeToggle');
@@ -1070,7 +1345,7 @@
       }));
     }
 
-    const state = { scope: 'all', list: sorted };
+    const state = { scope: 'all', list: sortPool(basePool) };
     render();
 
     $$('.scope-tab').forEach(btn => {
@@ -1088,21 +1363,28 @@
       else if (state.scope.startsWith('sub:')) pool = pool.filter(a => a.subgenre === state.scope.slice(4));
       else if (state.scope === 'underrated') pool = ARTISTS.filter(a => (a.respect_tier === 'C' || a.respect_tier === 'D') && !a.is_crossover);
       else if (state.scope === 'crossovers') pool = ARTISTS.filter(a => a.is_crossover);
-      state.list = [...pool].sort((x, y) => mockVotes(y) - mockVotes(x));
+      state.list = sortPool(pool);
       render();
     }
 
     function render() {
-      const max = mockVotes(state.list[0]) || 1;
+      const max = usingLive ? (liveScore(state.list[0]) || 1) : (mockVotes(state.list[0]) || 1);
       $('#lbList').innerHTML = state.list.map((a, i) => {
-        const p = pctOf(a, total).toFixed(2);
-        const w = (mockVotes(a) / max) * 100;
+        let pct, w;
+        if (usingLive) {
+          const p = liveScore(a);
+          pct = p > 0 ? (p / totalPoints * 100).toFixed(2) + '%' : '—';
+          w = (p / max) * 100;
+        } else {
+          pct = pctOf(a, seedTotal).toFixed(2) + '%';
+          w = (mockVotes(a) / max) * 100;
+        }
         return `
           <a class="lb-row" href="/artist.html?slug=${esc(a.slug)}">
             <span class="lb-row__rank">${String(i+1).padStart(2,'0')}</span>
             <span class="lb-row__photo">${photoHtml(a)}</span>
             <span><span class="lb-row__name">${esc(a.stage_name)}</span><br><span class="lb-row__city">${esc(lower(a.city_represented))}</span></span>
-            <span class="lb-row__pct">${p}%</span>
+            <span class="lb-row__pct">${pct}</span>
             <span class="lb-row__tier">${esc(a.popularity_tier)}</span>
             <span class="lb-row__bar"><span style="width:${w}%"></span></span>
           </a>`;

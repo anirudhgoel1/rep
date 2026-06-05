@@ -1,0 +1,480 @@
+{
+  "generated_at": "2026-06-05T20:35:48.309Z",
+  "checked": 34,
+  "subset": null,
+  "name_mismatch": [],
+  "name_partial": [],
+  "city_flag": [],
+  "errors": [],
+  "all": [
+    {
+      "slug": "baba-sehgal",
+      "stage_name": "Baba Sehgal",
+      "wiki_title": "Baba Sehgal",
+      "real_name_json": "Harjeet Singh Sehgal",
+      "city_represented": "Hyderabad",
+      "city_of_origin": "Lucknow",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Harjeet Singh \"Baba\" Sehgal is an Indian rapper. He is widely acclaimed to be the first Indian rapper. He is also involved in various other areas of the entertainment industry and works across media in several different languages. He was a contestant in the reality show Bigg Boss",
+      "description": "Indian rapper (born 1965)"
+    },
+    {
+      "slug": "bohemia",
+      "stage_name": "Bohemia",
+      "wiki_title": "Bohemia (rapper)",
+      "real_name_json": "Roger David",
+      "city_represented": "Punjab",
+      "city_of_origin": "Karachi",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Roger David, better known by his stage name Bohemia, is a Pakistani singer-songwriter and record producer, mainly associated with Punjabi hip-hop music. He is considered to be one of the pioneers of the Desi hip hop industry.",
+      "description": "Pakistani-American rapper and producer (born 1979)"
+    },
+    {
+      "slug": "yo-yo-honey-singh",
+      "stage_name": "Yo Yo Honey Singh",
+      "wiki_title": "Yo Yo Honey Singh",
+      "real_name_json": "Hirdesh Singh",
+      "city_represented": "Delhi",
+      "city_of_origin": "Hoshiarpur",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Hirdesh Singh, known professionally as Yo Yo Honey Singh, is an Indian singer, music producer and actor. He commenced his career as a hip-hop music producer in 2003, working as a session and recording artist within the underground music scene until the release of his debut studio",
+      "description": "Indian musician (born 1983)"
+    },
+    {
+      "slug": "raftaar",
+      "stage_name": "Raftaar",
+      "wiki_title": "Raftaar",
+      "real_name_json": "Dilin Nair",
+      "city_represented": "Delhi",
+      "city_of_origin": "Trivandrum",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Dilin Nair, better known by his stage name Raftaar, is an Indian rapper, lyricist, music producer, composer, dancer, actor and TV personality associated with Hindi, Punjabi and Haryanvi music.",
+      "description": "Indian rapper and singer (born 1988)"
+    },
+    {
+      "slug": "ikka",
+      "stage_name": "Ikka",
+      "wiki_title": "Ikka Singh",
+      "real_name_json": "Ankit Singh Patyal",
+      "city_represented": "Delhi",
+      "city_of_origin": "New Delhi",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Ankit Singh Patyal, better known by his stage names Ikka and Ikka Singh, is an Indian rapper and lyricist.",
+      "description": "Indian rapper, singer and lyricist"
+    },
+    {
+      "slug": "badshah",
+      "stage_name": "Badshah",
+      "wiki_title": "Badshah (rapper)",
+      "real_name_json": "Aditya Prateek Singh Sisodia",
+      "city_represented": "Delhi",
+      "city_of_origin": "New Delhi",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Aditya Prateek Singh, better known professionally as Badshah is an Indian rapper, singer-songwriter, music producer, businessman and movie producer. He is one of the most influential music artists in India widely credited with helping Indian Hip-Hop music reach global mainstream ",
+      "description": "Indian rapper and singer (born 1985)"
+    },
+    {
+      "slug": "divine",
+      "stage_name": "Divine",
+      "wiki_title": "Divine (rapper)",
+      "real_name_json": "Vivian Wilson Fernandes",
+      "city_represented": "Mumbai",
+      "city_of_origin": "Mumbai",
+      "name_match": true,
+      "wiki_places": [
+        "mumbai"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Vivian Wilson Fernandes, known professionally as Divine, is an Indian rapper and songwriter. He is credited as one of the pioneers of the Indian hip-hop scene and for bringing it to mainstream attention. His lyrics often reflect his experiences growing up in the chawls of Mumbai,",
+      "description": "Indian rapper and songwriter (born 1990)"
+    },
+    {
+      "slug": "naezy",
+      "stage_name": "Naezy",
+      "wiki_title": "Naezy",
+      "real_name_json": "Naved Shaikh",
+      "city_represented": "Mumbai",
+      "city_of_origin": "Mumbai",
+      "name_match": true,
+      "wiki_places": [
+        "mumbai"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Naved Shaikh, professionally known as Naezy, is an Indian rapper, songwriter from Mumbai, Maharashtra, who first broke into mainstream rap with the song \"Mere Gully Mein\", featuring fellow rapper DIVINE. A fictional version of his character has been portrayed by Ranveer Singh in ",
+      "description": "Indian rapper (born 1993)"
+    },
+    {
+      "slug": "mc-stan",
+      "stage_name": "MC Stan",
+      "wiki_title": "MC Stan",
+      "real_name_json": "Altaf Tadavi",
+      "city_represented": "Pune",
+      "city_of_origin": "Pune",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Altaf Tadavi, known professionally as MC STAN, is an Indian rapper, lyricist, music producer, and composer who was the winner of the sixteenth season of Bigg Boss in 2023. He is known for his work in the Hindi hip-hop and trap music scene.",
+      "description": "Indian rapper and music producer (born 1999)"
+    },
+    {
+      "slug": "yashraj",
+      "stage_name": "Yashraj",
+      "wiki_title": "Yashraj",
+      "real_name_json": "Yashraj Mehra",
+      "city_represented": "Mumbai",
+      "city_of_origin": "Mumbai",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Yashraj Mehra, better known as Yashraj is an Indian rapper, writer, and composer. He is primarily known for his songs like \"Ishq Nachaawe\" from the film Kho Gaye Hum Kahan, \"Murder Mubarak- Title Track\" from the film Murder Mubarak, and his single tracks like \"Hausla\", \"Dhundhala",
+      "description": "Indian rapper, writer and composer"
+    },
+    {
+      "slug": "krsna",
+      "stage_name": "KR$NA",
+      "wiki_title": "KRSNA (rapper)",
+      "real_name_json": "Krishna Kaul",
+      "city_represented": "Delhi",
+      "city_of_origin": "Delhi",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Krishna Kaul, known mononymously as Krishna, stylised now as KR$NA, is an Indian rapper. He was one of the earliest rappers to emerge in the Indian hip hop scene in the mid-2000s under the stage name Prozpekt. He is widely acknowledged within the desi hip-hop community for pionee",
+      "description": "Indian rapper"
+    },
+    {
+      "slug": "seedhe-maut",
+      "stage_name": "Seedhe Maut",
+      "wiki_title": "Seedhe Maut",
+      "real_name_json": "Abhijay Negi (Encore ABJ) + Siddhant Sharma (Calm)",
+      "city_represented": "Delhi",
+      "city_of_origin": "Pauri Garhwal + Nainital",
+      "name_match": null,
+      "wiki_places": [
+        "delhi"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Seedhe Maut is a hip hop duo from Delhi, India, consisting of Siddhant Sharma from Nainital and Abhijay Negi from Pauri Garhwal. Formed in 2015, their name comes from a slang that the former's brother used perpetually among his friends to signify \"giving their full potential to s",
+      "description": "Indian hip hop duo"
+    },
+    {
+      "slug": "prabh-deep",
+      "stage_name": "Prabh Deep",
+      "wiki_title": "Prabh Deep",
+      "real_name_json": "Prabhdeep Singh",
+      "city_represented": "Delhi",
+      "city_of_origin": "Delhi",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Prabhdeep Singh, better known by his stage name, Prabh Deep, is an Indian rapper, songwriter and music producer. He gained recognition in the Indian music industry after the release of his debut album Class-Sikh which debuted at number 2 on iTunes India albums chart and quickly r",
+      "description": "Indian rapper, singer, songwriter and music producer (born 1993)"
+    },
+    {
+      "slug": "king",
+      "stage_name": "King",
+      "wiki_title": "King (singer)",
+      "real_name_json": "Arpan Kumar Chandel",
+      "city_represented": "Delhi",
+      "city_of_origin": "Uttar Pradesh",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Arpan Kumar Chandel, known professionally as King or King Rocco, is an Indian singer-songwriter, rapper, and music producer. In 2019, he rose to fame as a finalist on the MTV India reality show MTV Hustle. He is best known for his singles \"Ghumshudaa\" (2019), \"Tu Aake Dekhle\" (20",
+      "description": "Indian singer and rapper (born 1995)"
+    },
+    {
+      "slug": "sidhu-moose-wala",
+      "stage_name": "Sidhu Moose Wala",
+      "wiki_title": "Sidhu Moose Wala",
+      "real_name_json": "Shubhdeep Singh Sidhu",
+      "city_represented": "Mansa",
+      "city_of_origin": "Moosa",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Shubhdeep Singh Sidhu, known professionally as Sidhu Moose Wala, was an Indian singer and rapper. He worked predominantly in Punjabi-language music and cinema. Moose Wala is considered to be one of the most influential and successful Punjabi rappers of all time and to many, among",
+      "description": "Indian rapper and singer (1993–2022)"
+    },
+    {
+      "slug": "karan-aujla",
+      "stage_name": "Karan Aujla",
+      "wiki_title": "Karan Aujla",
+      "real_name_json": "Jaskaran Singh Aujla",
+      "city_represented": "Surrey / Ludhiana",
+      "city_of_origin": "Ghurala",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Jaskaran Singh Aujla is an Indian singer, rapper and songwriter who is primarily associated with Punjabi music. He is known for his numerous tracks which have charted on the UK Asian chart published by the Official Charts Company, while seven have charted on the Global YouTube mu",
+      "description": "Indian singer and rapper (born 1997)"
+    },
+    {
+      "slug": "ap-dhillon",
+      "stage_name": "AP Dhillon",
+      "wiki_title": "AP Dhillon",
+      "real_name_json": "Amritpal Singh Dhillon",
+      "city_represented": "Vancouver / Gurdaspur",
+      "city_of_origin": "Mulianwali",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Amritpal Singh \"AP\" Dhillon is an Indo-Canadian singer-rapper and record producer associated with Punjabi music. Five of his singles have peaked on the Official Charts Company UK Asian and Punjabi charts, while \"Majhail\" and \"Brown Munde\" have topped Billboard charts. Dhillon, al",
+      "description": "Indian-Canadian singer and rapper"
+    },
+    {
+      "slug": "shubh",
+      "stage_name": "Shubh",
+      "wiki_title": "Shubh",
+      "real_name_json": "Shubhneet Singh",
+      "city_represented": "Brampton",
+      "city_of_origin": "Nangal",
+      "name_match": true,
+      "wiki_places": [
+        "brampton"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Shubhneet Singh, popularly known as Shubh, is an Indian rapper, singer, and songwriter associated with Punjabi music. Based in Brampton, Ontario, Shubh rose to mainstream in 2021 with his single \"We Rollin\". He released his debut album Still Rollin in 2023. His numerous singles h",
+      "description": "Indian singer-rapper (born 1997)"
+    },
+    {
+      "slug": "diljit-dosanjh",
+      "stage_name": "Diljit Dosanjh",
+      "wiki_title": "Diljit Dosanjh",
+      "real_name_json": "Daljit Singh Dosanjh",
+      "city_represented": "Jalandhar",
+      "city_of_origin": "Dosanjh Kalan",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Diljit Dosanjh is an Indian-born American singer, actor, and film producer associated with Punjabi and Hindi cinema. Dosanjh entered the Social 50 chart by Billboard in 2020. He has been featured in various music charts, including the Canadian Albums Chart, the UK Asian chart by ",
+      "description": "Indian and American singer and actor (born 1984)"
+    },
+    {
+      "slug": "sunny-malton",
+      "stage_name": "Sunny Malton",
+      "wiki_title": "Sunny Malton",
+      "real_name_json": "Sandeep Singh Sidhu",
+      "city_represented": "Brampton",
+      "city_of_origin": "Malton",
+      "name_match": true,
+      "wiki_places": [
+        "malton"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Sandeep Singh Sidhu, known as Sunny Malton, is a Canadian rapper and singer of Punjabi music. He rose to mainstream with his track 'Issa Jatt' with Sidhu Moose Wala. His song Levels with Sidhu charted at 32 on Canadian Hot 100.",
+      "description": "Indo-Canadian rapper-singer (born 1989)"
+    },
+    {
+      "slug": "gurinder-gill",
+      "stage_name": "Gurinder Gill",
+      "wiki_title": "Gurinder Gill",
+      "real_name_json": "Gurinderbir Singh Gill",
+      "city_represented": "Brampton",
+      "city_of_origin": "Punjab",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Gurinderbir Singh Gill is an Indian-born Canadian rapper-singer associated with Punjabi music. His numerous tracks including \"Majhail\" and \"Brown Munde\" charted on UK Asian and Punjabi music charts by Official Charts Company. Gill released his debut EP Not by Chance in December 2",
+      "description": "Indo-Canadian rapper-singer (born 1996)"
+    },
+    {
+      "slug": "jassa-dhillon",
+      "stage_name": "Jassa Dhillon",
+      "wiki_title": "Jassa Dhillon",
+      "real_name_json": "Jaspal Singh Dhillon",
+      "city_represented": "Karnal",
+      "city_of_origin": "Assandh",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Jaspal Singh Dhillon, known professionally as Jassa Dhillon, is an Indian singer, rapper and songwriter associated with Punjabi music. His song \"Talja\" has featured on the UK Asian Music Chart and also the Global YouTube weekly chart. Dhillon started his career along with his lab",
+      "description": "Indian singer-rapper"
+    },
+    {
+      "slug": "hanumankind",
+      "stage_name": "Hanumankind",
+      "wiki_title": "Hanumankind",
+      "real_name_json": "Sooraj Cherukat",
+      "city_represented": "Bengaluru",
+      "city_of_origin": "Malappuram",
+      "name_match": true,
+      "wiki_places": [
+        "hyderabad",
+        "kerala"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Sooraj Cherukat, known professionally as Hanumankind, is a rapper, singer, songwriter, and actor from Kerala, India. He released his first single \"Daily Dose\" from his debut EP Kalari in 2019. He received mainstream popularity in India and internationally with his track \"Big Dawg",
+      "description": "Indian rapper (born 1992)"
+    },
+    {
+      "slug": "talwiinder",
+      "stage_name": "Talwiinder",
+      "wiki_title": "Talwiinder",
+      "real_name_json": "Talwinder Singh Sidhu",
+      "city_represented": "Tarn Taran",
+      "city_of_origin": "Tarn Taran",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Talwinder Singh Sidhu, known by his professionally as Talwiinder, is an Indian singer, songwriter, and music producer known for Punjabi music. His music often incorporates a blend of electronic sounds, hip-hop, and alternative pop, with experimental elements of trap, lo-fi, boom ",
+      "description": "Indian singer-songwriter"
+    },
+    {
+      "slug": "tsumyoki",
+      "stage_name": "Tsumyoki",
+      "wiki_title": "Tsumyoki",
+      "real_name_json": "Nathan Joseph Mendes",
+      "city_represented": "Goa",
+      "city_of_origin": "Margao",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Nathan Joseph Mendes, known professionally as Tsumyoki or simply Yoki, is an Indian rapper, singer-songwriter, and record producer. He gained popularity from his single track release, \"White Tee\" (2019), and received further media attention through his album Daboij (2021), the EP",
+      "description": "Indian rapper (born 2001)"
+    },
+    {
+      "slug": "hiphop-tamizha",
+      "stage_name": "Hiphop Tamizha",
+      "wiki_title": "Hiphop Tamizha",
+      "real_name_json": "Rangadhithya \"Adhi\" Ramachandran Venkatapathy + R. Jeeva",
+      "city_represented": "Chennai",
+      "city_of_origin": "Chennai",
+      "name_match": true,
+      "wiki_places": [
+        "chennai"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Hiphop Tamizha is an Indian musical duo based in Chennai Tamil Nadu. The duo consists of Rangadhithya. \"Adhi\" Ramachandran Venkatapathy and R. Jeeva.",
+      "description": "Indian musical duo"
+    },
+    {
+      "slug": "paal-dabba",
+      "stage_name": "Paal Dabba",
+      "wiki_title": "Paal Dabba",
+      "real_name_json": "Anish",
+      "city_represented": "Chennai",
+      "city_of_origin": "Pulianthope",
+      "name_match": true,
+      "wiki_places": [
+        "chennai"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Anish, better known by his stage name Paal Dabba, is an Indian rapper, singer, songwriter and choreographer from Chennai, Tamil Nadu. He is best known for his singles \"170CM\", \"Galatta\", and \"Kaathu Mela\".",
+      "description": "Indian rapper"
+    },
+    {
+      "slug": "brodha-v",
+      "stage_name": "Brodha V",
+      "wiki_title": "Brodha V",
+      "real_name_json": "Vighnesh Shivanand",
+      "city_represented": "Bengaluru",
+      "city_of_origin": "Kanchipuram",
+      "name_match": true,
+      "wiki_places": [
+        "bengaluru"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Vighnesh Shivanand, better known by his stage name Brodha V, is an Indian rapper, songwriter, and record producer. Born in Kanchipuram, the Bengaluru-based artist started rapping at the age of 18 and took part in online rap battles on Orkut. As an independent artist, Brodha V rel",
+      "description": "Indian rapper (born 1990)"
+    },
+    {
+      "slug": "borkung-hrangkhawl",
+      "stage_name": "Borkung Hrangkhawl",
+      "wiki_title": "Borkung Hrangkhawl",
+      "real_name_json": "Borkung Hrangkhawl",
+      "city_represented": "Agartala",
+      "city_of_origin": "Tripura",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Borkung Hrangkhawl also known as B.K., is a Tripuri rapper, singer and songwriter from Tripura. He won a VIMA Asia Award and is well known in Northeast India.\nHe is the son of Tripura politician, Bijoy Kumar Hrangkhawl.",
+      "description": "Musical artist"
+    },
+    {
+      "slug": "gnie",
+      "stage_name": "G'nie",
+      "wiki_title": "G'nie",
+      "real_name_json": "Zonunmawia Fanai",
+      "city_represented": "Aizawl",
+      "city_of_origin": "Aizawl",
+      "name_match": true,
+      "wiki_places": [
+        "mizoram"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "G’nie is an Indian rapper, songwriter, and actor from Mizoram. He is a prominent figure in Mizo hip hop, praised for his bilingual lyricism and socially conscious themes.",
+      "description": "Musical artist"
+    },
+    {
+      "slug": "macnivil",
+      "stage_name": "Macnivil",
+      "wiki_title": "Macnivil",
+      "real_name_json": "Akaba Martin Longkümer",
+      "city_represented": "Kohima",
+      "city_of_origin": "Kohima",
+      "name_match": true,
+      "wiki_places": [
+        "nagaland"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Akaba Martin Longkümer, known professionally as Macnivil, is an Indian rapper, songwriter and music video director from Nagaland. He is considered as one of the pioneers of the Nagamese Hip hop scene in Nagaland. He further gained success after the release of his album Ura Uvie.",
+      "description": "Musical artist"
+    },
+    {
+      "slug": "raja-kumari",
+      "stage_name": "Raja Kumari",
+      "wiki_title": "Raja Kumari",
+      "real_name_json": "Svetha Yallapragada Rao",
+      "city_represented": "Mumbai",
+      "city_of_origin": "Claremont, CA",
+      "name_match": true,
+      "wiki_places": [
+        "claremont"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Svetha Yallapragada Rao, professionally known as Raja Kumari, is an American rapper, songwriter and singer from Claremont, California. Kumari is best known for her collaborations with notable artists including Gwen Stefani, Iggy Azalea, Fifth Harmony, Sidhu Moosewala, Knife Party",
+      "description": "American rapper (born 1986)"
+    },
+    {
+      "slug": "epr",
+      "stage_name": "EPR",
+      "wiki_title": "Underground Authority",
+      "real_name_json": "Santhanam Srinivasan Iyer",
+      "city_represented": "Kolkata",
+      "city_of_origin": "Kolkata",
+      "name_match": null,
+      "wiki_places": [
+        "kolkata"
+      ],
+      "city_likely_ok": true,
+      "extract_snip": "Underground Authority is an alternative rock and rap rock band from India. Formed in early 2010, in Kolkata, their music is flavoured by a blend of protest poetry, reggae, alternative rock, rap rock and hard rock. The band is noted for their socio-political messages and anti-capi",
+      "description": "Rock band"
+    },
+    {
+      "slug": "arivu",
+      "stage_name": "Arivu",
+      "wiki_title": "Arivu",
+      "real_name_json": "Arivarasu Kalainesan",
+      "city_represented": "Chennai",
+      "city_of_origin": "Arakkonam",
+      "name_match": true,
+      "wiki_places": [],
+      "city_likely_ok": true,
+      "extract_snip": "Arivarasu Kalainesan, more commonly known as Arivu, is an Indian rapper, singer, songwriter and composer. He is best known for his Tamil independent singles, including \"Enjoy Enjaami\", and for his work on film numbers like \"Vaathi Raid\" from Master (2021), \"Single Pasanga\" from N",
+      "description": "Indian rapper and lyricist"
+    }
+  ]
+}

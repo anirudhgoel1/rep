@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0E0E10"/>
+  <rect x="0" y="0" width="1200" height="8" fill="#ED8B40"/>
+  <text x="60" y="120" fill="#ED8B40" font-family="monospace" font-size="22" letter-spacing="4">DESI HIP HOP · RANKED BY THE HEADS</text>
+  <text x="60" y="280" fill="#F4EFE6" font-family="Impact, Arial Black, sans-serif" font-size="200" font-weight="900">REP</text>
+  <circle cx="330" cy="268" r="18" fill="#ED8B40"/>
+  <text x="60" y="360" fill="#9A9A9A" font-family="Georgia, serif" font-size="28" font-style="italic">the asli DHH top 5 · arguments encouraged</text>
+  <text x="60" y="520" fill="#F4EFE6" font-family="monospace" font-size="36" letter-spacing="2">90 ARTISTS · 10 CITIES · SEED UNTIL BALLOTS SHIP</text>
+  <rect x="0" y="622" width="1200" height="8" fill="#ED8B40"/>
+</svg>
