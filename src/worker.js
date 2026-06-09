@@ -34,7 +34,8 @@ export default {
       try {
         return await handleApi(request, env, url);
       } catch (err) {
-        return json({ error: 'server_error', detail: String(err && err.message || err) }, 500);
+        console.error('api error', url.pathname, err);
+        return json({ error: 'server_error' }, 500);
       }
     }
     // everything else is the static site
@@ -102,6 +103,32 @@ function rankPoints(listType, rank) {
   return rank || 0;
 }
 
+/* slugs must exist in the artists table · returns the validated subset order-preserved,
+   or null if any slug is unknown */
+async function validSlugs(db, slugs) {
+  const clean = [...new Set(slugs.filter(s => typeof s === 'string' && /^[a-z0-9-]{1,60}$/.test(s)))];
+  if (clean.length !== slugs.length || !clean.length) return null;
+  const q = clean.map((_, i) => `?${i + 1}`).join(',');
+  const rows = await db.prepare(`SELECT slug FROM artists WHERE slug IN (${q})`).bind(...clean).all();
+  return (rows.results || []).length === clean.length ? clean : null;
+}
+
+/* one write-budget per IP per hour · D1-backed, no KV needed */
+const WRITE_CAP = 60;
+async function rateLimited(db, request) {
+  const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+  const bucket = Math.floor(Date.now() / 3600000);
+  const row = await db.prepare(
+    `INSERT INTO rate_limits (key, bucket, n) VALUES (?1, ?2, 1)
+     ON CONFLICT(key) DO UPDATE SET n = n + 1 RETURNING n`
+  ).bind(ip + ':' + bucket, bucket).first();
+  if (row && row.n === 1) {
+    // first write this hour from this ip · piggyback stale-bucket cleanup
+    await db.prepare(`DELETE FROM rate_limits WHERE bucket < ?1`).bind(bucket).run();
+  }
+  return !!row && row.n > WRITE_CAP;
+}
+
 /* ---------------------------------------------------------------- router */
 
 async function handleApi(request, env, url) {
@@ -113,10 +140,15 @@ async function handleApi(request, env, url) {
   const route = (m, re) => method === m && re.test(path);
   const param = (re) => (path.match(re) || [])[1];
 
+  if (method === 'POST' && await rateLimited(db, request)) {
+    return withCookie(json({ error: 'slow_down' }, 429), setCookie);
+  }
+
   // health -------------------------------------------------------------
   if (route('GET', /^\/api\/health$/)) {
     let dbOk = false;
-    try { await db.prepare('SELECT 1').first(); dbOk = true; } catch {}
+    // probe a real table so an unseeded database honestly reports db:false
+    try { dbOk = !!(await db.prepare('SELECT COUNT(*) AS n FROM artists').first()); } catch {}
     return withCookie(json({ ok: true, db: dbOk, uid }), setCookie);
   }
 
@@ -156,46 +188,51 @@ async function handleApi(request, env, url) {
     const defense = body.defense ? String(body.defense).slice(0, 140) : null;
     const username = body.username ? String(body.username).replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20) : null;
 
-    if (!picks || (Array.isArray(picks) && picks.length === 0) || (typeof picks === 'object' && Object.keys(picks).length === 0)) {
-      return withCookie(json({ error: 'picks_required' }, 400), setCookie);
+    // validate picks BEFORE writing anything · [slug, rank] pairs for votes
+    const tierRank = { S: 5, A: 4, B: 3, C: 2, D: 1 };
+    let ranked = null;   // null = invalid
+    let storedPicks = picks;
+    if (type === 'tier') {
+      if (picks && typeof picks === 'object' && !Array.isArray(picks)) {
+        const flat = [];
+        storedPicks = {};
+        for (const [t, slugs] of Object.entries(picks)) {
+          if (!tierRank[t] || !Array.isArray(slugs)) continue;
+          storedPicks[t] = slugs;
+          slugs.forEach(slug => flat.push([slug, tierRank[t]]));
+        }
+        const ok = flat.length && await validSlugs(db, flat.map(p => p[0]));
+        if (ok) ranked = flat;
+      }
+    } else if (Array.isArray(picks)) {
+      const slugs = await validSlugs(db, picks.slice(0, 5));
+      if (slugs) {
+        storedPicks = slugs;
+        ranked = slugs.map((slug, i) => [slug, type === 'top5' ? i + 1 : 0]);
+      }
     }
+    if (!ranked) return withCookie(json({ error: 'bad_picks' }, 400), setCookie);
 
     const id = b62(6);
     const now = Date.now();
-    await db.prepare(
+    const stmts = [db.prepare(
       `INSERT INTO lists (id, user_id, username, type, scope, picks, defense, created_at)
        VALUES (?1,?2,?3,?4,?5,?6,?7,?8)`
-    ).bind(id, uid, username, type, scope, JSON.stringify(picks), defense, now).run();
+    ).bind(id, uid, username, type, scope, JSON.stringify(storedPicks), defense, now)];
 
-    // translate the list into aggregate votes (top5 / tier only)
+    // translate the list into aggregate votes (top5 / tier only) · re-vote replaces
     if (type === 'top5' || type === 'tier') {
-      // clear this user's prior ballot for this type+scope so re-voting updates
-      await db.prepare(
+      stmts.push(db.prepare(
         `DELETE FROM votes WHERE user_id = ?1 AND list_type = ?2 AND scope IS ?3`
-      ).bind(uid, type, scope).run();
-
-      const stmts = [];
-      if (type === 'top5' && Array.isArray(picks)) {
-        picks.slice(0, 5).forEach((slug, i) => {
-          stmts.push(db.prepare(
-            `INSERT OR REPLACE INTO votes (user_id, artist_slug, list_type, rank, scope, list_id, created_at)
-             VALUES (?1,?2,'top5',?3,?4,?5,?6)`
-          ).bind(uid, slug, i + 1, scope, id, now));
-        });
-      } else if (type === 'tier' && typeof picks === 'object') {
-        const tierRank = { S: 5, A: 4, B: 3, C: 2, D: 1 };
-        for (const [tier, slugs] of Object.entries(picks)) {
-          if (!tierRank[tier] || !Array.isArray(slugs)) continue;
-          slugs.forEach(slug => {
-            stmts.push(db.prepare(
-              `INSERT OR REPLACE INTO votes (user_id, artist_slug, list_type, rank, scope, list_id, created_at)
-               VALUES (?1,?2,'tier',?3,?4,?5,?6)`
-            ).bind(uid, slug, tierRank[tier], scope, id, now));
-          });
-        }
-      }
-      if (stmts.length) await db.batch(stmts);
+      ).bind(uid, type, scope));
+      ranked.forEach(([slug, rank]) => {
+        stmts.push(db.prepare(
+          `INSERT INTO votes (user_id, artist_slug, list_type, rank, scope, list_id, created_at)
+           VALUES (?1,?2,?3,?4,?5,?6,?7)`
+        ).bind(uid, slug, type, rank, scope, id, now));
+      });
     }
+    await db.batch(stmts);
 
     return withCookie(json({ id }), setCookie);
   }
@@ -225,6 +262,8 @@ async function handleApi(request, env, url) {
   // upvote a list (toggle) --------------------------------------------
   if (route('POST', /^\/api\/lists\/[a-zA-Z0-9]+\/upvote$/)) {
     const id = param(/^\/api\/lists\/([a-zA-Z0-9]+)\/upvote$/);
+    const target = await db.prepare(`SELECT 1 FROM lists WHERE id = ?1 AND is_hidden = 0`).bind(id).first();
+    if (!target) return withCookie(json({ error: 'not_found' }, 404), setCookie);
     const existing = await db.prepare(`SELECT 1 FROM list_upvotes WHERE user_id = ?1 AND list_id = ?2`).bind(uid, id).first();
     if (existing) {
       await db.batch([
@@ -326,9 +365,22 @@ async function handleApi(request, env, url) {
 
   if (route('POST', /^\/api\/suggestions\/[0-9]+\/upvote$/)) {
     const id = parseInt(param(/^\/api\/suggestions\/([0-9]+)\/upvote$/), 10);
-    await db.prepare(`UPDATE suggestions SET upvotes = upvotes + 1 WHERE id = ?1`).bind(id).run();
+    const target = await db.prepare(`SELECT 1 FROM suggestions WHERE id = ?1`).bind(id).first();
+    if (!target) return withCookie(json({ error: 'not_found' }, 404), setCookie);
+    const existing = await db.prepare(`SELECT 1 FROM suggestion_upvotes WHERE user_id = ?1 AND suggestion_id = ?2`).bind(uid, id).first();
+    if (existing) {
+      await db.batch([
+        db.prepare(`DELETE FROM suggestion_upvotes WHERE user_id = ?1 AND suggestion_id = ?2`).bind(uid, id),
+        db.prepare(`UPDATE suggestions SET upvotes = MAX(0, upvotes - 1) WHERE id = ?1`).bind(id),
+      ]);
+    } else {
+      await db.batch([
+        db.prepare(`INSERT INTO suggestion_upvotes (user_id, suggestion_id, created_at) VALUES (?1,?2,?3)`).bind(uid, id, Date.now()),
+        db.prepare(`UPDATE suggestions SET upvotes = upvotes + 1 WHERE id = ?1`).bind(id),
+      ]);
+    }
     const row = await db.prepare(`SELECT upvotes FROM suggestions WHERE id = ?1`).bind(id).first();
-    return withCookie(json({ upvotes: (row && row.upvotes) || 0 }), setCookie);
+    return withCookie(json({ upvotes: (row && row.upvotes) || 0, voted: !existing }), setCookie);
   }
 
   return withCookie(json({ error: 'not_found' }, 404), setCookie);

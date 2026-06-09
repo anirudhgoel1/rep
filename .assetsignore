@@ -12,6 +12,9 @@ node_modules/
 wrangler.toml
 wrangler.api.toml
 wrangler.static.toml
+research/
+.cursor/
+*.bak
 package.json
 package-lock.json
 README.md

@@ -166,6 +166,21 @@ CREATE TABLE suggestions (
 );
 CREATE INDEX idx_suggestions_status ON suggestions(status, upvotes DESC);
 
+CREATE TABLE suggestion_upvotes (
+  user_id TEXT NOT NULL,
+  suggestion_id INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, suggestion_id),
+  FOREIGN KEY (suggestion_id) REFERENCES suggestions(id) ON DELETE CASCADE
+);
+
+-- per-IP hourly write budget · see rateLimited() in src/worker.js
+CREATE TABLE rate_limits (
+  key TEXT PRIMARY KEY,            -- '<ip>:<hour-bucket>'
+  bucket INTEGER NOT NULL,
+  n INTEGER NOT NULL DEFAULT 1
+);
+
 -- ============================================================
 -- 7. Metadata / kvish settings
 -- ============================================================

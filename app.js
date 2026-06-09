@@ -8,6 +8,13 @@
   const $ = (s, p = document) => p.querySelector(s);
   const $$ = (s, p = document) => Array.from(p.querySelectorAll(s));
 
+  /* installability + push · sw.js is a strict passthrough, no caching */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
+
   /* ============================================================
      shared · upi swap, data load, helpers
      ============================================================ */
@@ -33,7 +40,7 @@
   let LIVE_BALLOTS;
   async function loadArtists() {
     if (ARTISTS) return ARTISTS;
-    const r = await fetch('/data/artists.json?v=20260608-2');
+    const r = await fetch('/data/artists.json?v=20260610-1');
     const j = await r.json();
     ROSTER_META = j._meta || {};
     ARTISTS = (j.artists || []).filter(a => a.is_votable !== 0);
@@ -230,7 +237,7 @@
       const h = await API.get('/health');
       _apiUp = !!(h && h.ok);
       _apiDb = !!(h && h.db);
-      API_LIVE = _apiUp;
+      API_LIVE = _apiUp && _apiDb;
     } catch {
       _apiUp = false;
       _apiDb = false;
@@ -594,7 +601,7 @@
 
     // beef preview · pull from beefs.json
     try {
-      const beefData = await (await fetch('/data/beefs.json')).json();
+      const beefData = await (await fetch('/data/beefs.json?v=20260610-1')).json();
       const beefs = $('#beefPreview');
       if (beefs && beefData.beefs) {
         beefs.innerHTML = beefData.beefs.slice(0, 3).map(b => {
@@ -660,6 +667,9 @@
           $$('.duel__photo', duel).forEach(el => { el.style.padding = '0'; el.style.overflow = 'hidden'; });
           if (!st.voted) {
             $$('.duel__side', duel).forEach(side => side.addEventListener('click', async () => {
+              if (st.voted) return;
+              st.voted = true;
+              $$('.duel__side', duel).forEach(b => { b.disabled = true; });
               const pick = side.dataset.slug;
               try {
                 const res = await API.post('/daily/vote', { pick });
@@ -667,7 +677,7 @@
               } catch {
                 if (pick === aSlug) st.va++; else st.vb++; st.pick = pick;
               }
-              st.voted = true; paint();
+              paint();
               if (duelTheme) duelTheme.innerHTML = `${esc(theme)} · you voted · one vote per head`;
             }));
           }
@@ -778,11 +788,11 @@
       let slangN = 19, tlN = 22, cypherN = 4, labelN = 10, beefN = 3;
       try {
         const [sl, tl, cy, lb, bf] = await Promise.all([
-          fetch('/data/slang.json').then(r => r.json()),
-          fetch('/data/timeline.json').then(r => r.json()),
-          fetch('/data/cyphers.json').then(r => r.json()),
-          fetch('/data/labels.json').then(r => r.json()),
-          fetch('/data/beefs.json').then(r => r.json()),
+          fetch('/data/slang.json?v=20260610-1').then(r => r.json()),
+          fetch('/data/timeline.json?v=20260610-1').then(r => r.json()),
+          fetch('/data/cyphers.json?v=20260610-1').then(r => r.json()),
+          fetch('/data/labels.json?v=20260610-1').then(r => r.json()),
+          fetch('/data/beefs.json?v=20260610-1').then(r => r.json()),
         ]);
         slangN = sl.terms?.length || slangN;
         tlN = tl.milestones?.length || tlN;
@@ -812,7 +822,6 @@
     }
 
     // dynamic city counts on landing tiles
-    const NE_STATES = ['Meghalaya','Assam','Manipur','Mizoram','Nagaland','Tripura','Arunachal Pradesh','Sikkim'];
     const cityCount = (key) => {
       if (key === 'Punjab') return ARTISTS.filter(a => a.state === 'Punjab').length;
       if (key === 'Shillong' || key === 'Northeast') return ARTISTS.filter(a => NE_STATES.includes(a.state)).length;
@@ -1072,7 +1081,7 @@
     // load bios in parallel; ok if missing
     let bio = null;
     try {
-      const biosData = await (await fetch('/data/bios.json?v=20260608-2')).json();
+      const biosData = await (await fetch('/data/bios.json?v=20260610-1')).json();
       bio = biosData.bios?.[slug] || null;
     } catch {}
 
@@ -1449,11 +1458,20 @@
     function miniHtml(a) {
       if (!a) return '';
       return `
-        <div class="tier-mini" data-slug="${esc(a.slug)}" title="${esc(a.stage_name)}">
+        <div class="tier-mini" data-slug="${esc(a.slug)}" title="${esc(a.stage_name)}"
+             tabindex="0" role="button" aria-label="${esc(a.stage_name)}">
           ${photoHtml(a)}
           <div class="tier-mini__label">${esc(a.stage_name)}</div>
         </div>`;
     }
+
+    // keyboard parity for the tap targets · Enter/Space acts as click
+    document.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.classList?.contains('tier-mini')) {
+        e.preventDefault();
+        e.target.click();
+      }
+    });
 
     $('#tierExport').addEventListener('click', async () => {
       const payload = { tiers: state.tiers, created_at: Date.now() };
@@ -1465,6 +1483,11 @@
         // pull saved handle from last top-5 if present, else anon
         let handle = '';
         try { handle = JSON.parse(localStorage.getItem('rep:last_top5') || '{}').handle || ''; } catch {}
+        // best-effort ballot · tier rows count on the live board when the API is up
+        const filled = Object.fromEntries(Object.entries(state.tiers).filter(([, v]) => v.length));
+        if (Object.keys(filled).length) {
+          try { await API.post('/lists', { type: 'tier', picks: filled, username: handle || null }); } catch { /* offline */ }
+        }
         const canvas = await buildTierCard({ tiers: state.tiers, handle });
         const filename = `rep-tier-${(handle || 'anon')}.png`;
         showShareModal('your DHH tier list', canvas, filename);
@@ -1517,11 +1540,14 @@
     }).join('');
 
     $$('.quote__up', list).forEach(btn => btn.addEventListener('click', async () => {
+      if (btn.disabled) return;
+      btn.disabled = true;
       try {
         const r = await API.post('/lists/' + btn.dataset.id + '/upvote');
         btn.textContent = '▲ ' + r.upvotes;
         btn.classList.toggle('is-up', r.voted);
       } catch { /* offline */ }
+      btn.disabled = false;
     }));
   }
 
@@ -1558,7 +1584,14 @@
           <button class="suggest__up" data-id="${esc(s.id)}">▲ ${s.upvotes}</button>
         </li>`).join('');
       $$('.suggest__up', listEl).forEach(btn => btn.addEventListener('click', async () => {
-        try { const r = await API.post('/suggestions/' + btn.dataset.id + '/upvote'); btn.textContent = '▲ ' + r.upvotes; } catch {}
+        if (btn.disabled) return;
+        btn.disabled = true;
+        try {
+          const r = await API.post('/suggestions/' + btn.dataset.id + '/upvote');
+          btn.textContent = '▲ ' + r.upvotes;
+          btn.classList.toggle('is-up', r.voted);
+        } catch {}
+        btn.disabled = false;
       }));
     }
 
@@ -1693,7 +1726,7 @@
      ============================================================ */
   async function initBeefs() {
     await loadArtists();
-    const data = await (await fetch('/data/beefs.json')).json();
+    const data = await (await fetch('/data/beefs.json?v=20260610-1')).json();
     const root = $('#beefRoot');
     root.innerHTML = data.beefs.map(b => {
       const a = BY_SLUG[b.actor_a], c = BY_SLUG[b.actor_b];
@@ -1726,7 +1759,7 @@
      slang · render glossary
      ============================================================ */
   async function initSlang() {
-    const data = await (await fetch('/data/slang.json')).json();
+    const data = await (await fetch('/data/slang.json?v=20260610-1')).json();
     const terms = data.terms || [];
     const wrap = $('#slangSearchWrap');
     if (wrap) {
@@ -1756,7 +1789,7 @@
      timeline · milestones
      ============================================================ */
   async function initTimeline() {
-    const data = await (await fetch('/data/timeline.json')).json();
+    const data = await (await fetch('/data/timeline.json?v=20260610-1')).json();
     const milestones = data.milestones || [];
     const decadeOf = (y) => `${Math.floor(Number(y) / 10) * 10}s`;
     const decades = unique(milestones.map(m => decadeOf(m.year))).sort();
@@ -2052,7 +2085,7 @@
      ============================================================ */
   async function initLabels() {
     await loadArtists();
-    const data = await (await fetch('/data/labels.json')).json();
+    const data = await (await fetch('/data/labels.json?v=20260610-1')).json();
     $('#labelsRoot').innerHTML = data.labels.map(L => {
       const roster = (L.roster_slugs || []).map(s => BY_SLUG[s]).filter(Boolean);
       return `
@@ -2075,7 +2108,7 @@
      ============================================================ */
   async function initProducers() {
     await loadArtists();
-    const data = await (await fetch('/data/producers.json')).json();
+    const data = await (await fetch('/data/producers.json?v=20260610-1')).json();
     $('#producersRoot').innerHTML = data.producers.map(p => {
       const credits = (p.credits_for_slugs || []).map(s => BY_SLUG[s]?.stage_name).filter(Boolean).join(' · ');
       return `
@@ -2094,7 +2127,7 @@
      ============================================================ */
   async function initCyphers() {
     await loadArtists();
-    const data = await (await fetch('/data/cyphers.json')).json();
+    const data = await (await fetch('/data/cyphers.json?v=20260610-1')).json();
     $('#cyphersRoot').innerHTML = data.cyphers.map(c => {
       const artists = (c.artist_slugs || []).map(s => BY_SLUG[s]).filter(Boolean);
       return `

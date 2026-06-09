@@ -1,8 +1,8 @@
-# Production deploy · static assets only (matches live rep.anirudhgoel.xyz).
-# Ships data/artists.json (90), bios, HTML, CSS, JS. No Worker API on prod yet.
-# API + D1: see wrangler.api.toml · npm run deploy:api
+# Rep · single config · Worker API + D1 + static assets on rep.anirudhgoel.xyz
+# Dev: npm run dev · Deploy: npm run deploy · DB: npm run db:remote
 
 name = "rep"
+main = "src/worker.js"
 compatibility_date = "2026-05-20"
 workers_dev = true
 preview_urls = true
@@ -10,6 +10,12 @@ preview_urls = true
 [assets]
 directory = "./"
 not_found_handling = "404-page"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rep-db"
+database_id = "114f992a-2099-4a0c-a3a5-011b15638c46"
 
 [[routes]]
 pattern = "rep.anirudhgoel.xyz"

@@ -26,8 +26,7 @@ for (const f of htmlFiles) {
 const appPath = join(ROOT, 'app.js');
 const appSrc = await readFile(appPath, 'utf8');
 const appOut = appSrc
-  .replace(/\/data\/artists\.json\?v=[^'"]+/g, `/data/artists.json?v=${NEW_VERSION}`)
-  .replace(/\/data\/bios\.json\?v=[^'"]+/g, `/data/bios.json?v=${NEW_VERSION}`);
+  .replace(/\/data\/(\w+)\.json\?v=[^'"]+/g, `/data/$1.json?v=${NEW_VERSION}`);
 if (appOut !== appSrc) {
   await writeFile(appPath, appOut);
   console.log('  bumped · app.js data fetches');
