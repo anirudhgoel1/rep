@@ -38,15 +38,33 @@
   let BY_SLUG = null;
   let ROSTER_META = {};
   let LIVE_BALLOTS;
+  let BIOS = {};
   async function loadArtists() {
     if (ARTISTS) return ARTISTS;
-    const r = await fetch('/data/artists.json?v=20260610-1');
+    // bios load in parallel · cards show editorial hooks when available
+    const biosP = fetch('/data/bios.json?v=20260614-1')
+      .then(r => r.json())
+      .then(j => { BIOS = (j && j.bios) || {}; })
+      .catch(() => {});
+    const r = await fetch('/data/artists.json?v=20260614-1');
     const j = await r.json();
     ROSTER_META = j._meta || {};
     ARTISTS = (j.artists || []).filter(a => a.is_votable !== 0);
     BY_SLUG = Object.fromEntries(ARTISTS.map(a => [a.slug, a]));
+    await biosP;
     syncRosterCountUI();
     return ARTISTS;
+  }
+  function bioHook(a) {
+    const b = BIOS[a.slug];
+    return (b && b.headline) || a.note || '';
+  }
+  /* localStorage JSON · corrupt values must never take a page down */
+  function lsJson(key, fallback) {
+    try {
+      const v = JSON.parse(localStorage.getItem(key) || 'null');
+      return v == null ? fallback : v;
+    } catch { return fallback; }
   }
   async function liveBallotCount() {
     if (LIVE_BALLOTS !== undefined) return LIVE_BALLOTS;
@@ -193,12 +211,43 @@
         init.headers = { 'content-type': 'application/json', ...(opts.headers || {}) };
       }
       const r = await fetch('/api' + path, init);
-      if (!r.ok) throw new Error('api ' + r.status);
+      if (!r.ok) {
+        let code = '';
+        try { code = (await r.json()).error || ''; } catch {}
+        const err = new Error('api ' + r.status + (code ? ' · ' + code : ''));
+        err.status = r.status;
+        err.code = code;
+        throw err;
+      }
       return r.json();
     },
     get(path) { return this.call(path); },
     post(path, body) { return this.call(path, { method: 'POST', body: body || {} }); },
   };
+
+  /* turnstile · explicit render, one widget per page, interaction-only so it
+     stays invisible unless cloudflare actually wants a human check */
+  const TS_SITEKEY = '0x4AAAAAADi4326pkDL913pa';
+  let _tsWidget = null;
+  function mountTurnstile(sel, tries = 0) {
+    const el = $(sel);
+    if (!el) return;
+    if (!window.turnstile) {
+      // api.js loads async · poll briefly instead of racing its onload
+      if (tries < 40) setTimeout(() => mountTurnstile(sel, tries + 1), 250);
+      return;
+    }
+    if (_tsWidget !== null) return;
+    try {
+      _tsWidget = turnstile.render(el, { sitekey: TS_SITEKEY, theme: 'light', appearance: 'interaction-only' });
+    } catch { /* widget is optional · worker decides enforcement */ }
+  }
+  function tsToken() {
+    try { return (_tsWidget !== null && window.turnstile) ? (turnstile.getResponse(_tsWidget) || undefined) : undefined; } catch { return undefined; }
+  }
+  function tsReset() {
+    try { if (_tsWidget !== null && window.turnstile) turnstile.reset(_tsWidget); } catch {}
+  }
   let _apiUp = null;
   let _apiDb = null;
   let API_LIVE = null;
@@ -286,6 +335,7 @@
         ${stampHtml}
         <div class="card__photo">${photoHtml(a)}</div>
         <div class="card__name">${esc(a.stage_name)}</div>
+        ${bioHook(a) ? `<div class="card__hook">${esc(bioHook(a))}</div>` : ''}
         <div class="card__meta">
           <span>${esc(lower(a.city_represented))}</span>
           <span class="card__tier">${esc(tier)}</span>
@@ -477,6 +527,10 @@
   if (page === 'labels') initLabels();
   if (page === 'producers') initProducers();
   if (page === 'cyphers') initCyphers();
+  if (page === 'list') initListPage();
+
+  // bot check · mounts only on pages that carry a #tsBox container
+  mountTurnstile('#tsBox');
 
   /* ============================================================
      landing · real photos in ticker, bar of day, saved hint
@@ -558,6 +612,7 @@
                 <div class="aotd-name">${esc(aotd.stage_name)}</div>
               </a>
               <div class="aotd-sub">${esc(subBits)}</div>
+              ${bioHook(aotd) ? `<p class="aotd-hook">${esc(bioHook(aotd))}</p>` : ''}
               ${aotd.notable_tracks && aotd.notable_tracks.length ? `
                 <div class="aotd-tracks">three to play · ${aotd.notable_tracks.slice(0,3).map(t => `<em>${esc(t)}</em>`).join(' · ')}</div>
               ` : ''}
@@ -588,8 +643,8 @@
 
     // saved-state hint (you locked in a top 5)
     try {
-      const last = JSON.parse(localStorage.getItem('rep:last_top5') || 'null');
-      if (last && last.picks && last.picks.length === 5) {
+      const last = lsJson('rep:last_top5', null);
+      if (last && Array.isArray(last.picks) && last.picks.length === 5) {
         const hint = $('#savedHint');
         if (hint) {
           const names = last.picks.map(s => BY_SLUG[s]?.stage_name).filter(Boolean).slice(0, 3).join(', ');
@@ -601,7 +656,7 @@
 
     // beef preview · pull from beefs.json
     try {
-      const beefData = await (await fetch('/data/beefs.json?v=20260610-1')).json();
+      const beefData = await (await fetch('/data/beefs.json?v=20260614-1')).json();
       const beefs = $('#beefPreview');
       if (beefs && beefData.beefs) {
         beefs.innerHTML = beefData.beefs.slice(0, 3).map(b => {
@@ -788,11 +843,11 @@
       let slangN = 19, tlN = 22, cypherN = 4, labelN = 10, beefN = 3;
       try {
         const [sl, tl, cy, lb, bf] = await Promise.all([
-          fetch('/data/slang.json?v=20260610-1').then(r => r.json()),
-          fetch('/data/timeline.json?v=20260610-1').then(r => r.json()),
-          fetch('/data/cyphers.json?v=20260610-1').then(r => r.json()),
-          fetch('/data/labels.json?v=20260610-1').then(r => r.json()),
-          fetch('/data/beefs.json?v=20260610-1').then(r => r.json()),
+          fetch('/data/slang.json?v=20260614-1').then(r => r.json()),
+          fetch('/data/timeline.json?v=20260614-1').then(r => r.json()),
+          fetch('/data/cyphers.json?v=20260614-1').then(r => r.json()),
+          fetch('/data/labels.json?v=20260614-1').then(r => r.json()),
+          fetch('/data/beefs.json?v=20260614-1').then(r => r.json()),
         ]);
         slangN = sl.terms?.length || slangN;
         tlN = tl.milestones?.length || tlN;
@@ -863,8 +918,8 @@
       activeSlot: null
     };
     try {
-      const last = JSON.parse(localStorage.getItem('rep:last_top5') || 'null');
-      if (last?.picks?.length === 5) {
+      const last = lsJson('rep:last_top5', null);
+      if (last && Array.isArray(last.picks) && last.picks.length === 5) {
         last.picks.forEach((slug, i) => { state.slots[i] = BY_SLUG[slug] || null; });
         state.defense = last.defense || '';
         state.handle = last.handle || '';
@@ -1040,15 +1095,26 @@
 
       // submit the ballot to the live board (counts toward the live top-N).
       // non-blocking + best-effort: a render failure must never lose the card.
+      let ballotId = null;
       try {
         const res = await API.post('/lists', {
           type: 'top5',
           picks: payload.picks,
           defense: state.defense || null,
           username: state.handle || null,
+          ts: tsToken(),
         });
-        if (res && res.id) localStorage.setItem('rep:last_ballot_id', res.id);
-      } catch (e) { /* offline / static preview — card still renders below */ }
+        if (res && res.id) { ballotId = res.id; localStorage.setItem('rep:last_ballot_id', res.id); }
+        tsReset();
+      } catch (e) {
+        if (e && e.code === 'turnstile') {
+          tsReset();
+          toast('human check did not clear · wait a beat, then lock again');
+          return;
+        }
+        if (e && e.code === 'slow_down') { toast('easy · too many drops this hour, try later'); return; }
+        /* offline / static preview · card still renders below */
+      }
 
       // build the share card PNG
       const btn = $('#lockBtn');
@@ -1057,8 +1123,14 @@
       try {
         const picks = state.slots;
         const canvas = await buildShareCard({ picks, defense: state.defense, handle: state.handle });
+        // ship the rendered card to the worker so the share link unfurls with it
+        if (ballotId) {
+          canvas.toBlob(b => {
+            if (b) fetch('/api/lists/' + ballotId + '/card', { method: 'POST', body: b, credentials: 'same-origin' }).catch(() => {});
+          }, 'image/png');
+        }
         const filename = `rep-top5-${(state.handle || 'anon')}.png`;
-        showShareModal('your DHH top 5', canvas, filename);
+        showShareModal('your DHH top 5', canvas, filename, { link: ballotId ? location.origin + '/l/' + ballotId : null });
       } catch (e) {
         console.error(e);
         toast('PNG render hit an error · try refreshing');
@@ -1078,12 +1150,8 @@
     const a = BY_SLUG[slug];
     if (!a) { $('#artistRoot').innerHTML = '<p class="empty-grid">artist not found. check the link.</p>'; return; }
 
-    // load bios in parallel; ok if missing
-    let bio = null;
-    try {
-      const biosData = await (await fetch('/data/bios.json?v=20260610-1')).json();
-      bio = biosData.bios?.[slug] || null;
-    } catch {}
+    // bios already loaded by loadArtists · no second fetch
+    const bio = BIOS[slug] || null;
 
     const total = totalVotes(ARTISTS);
     const sortedByPct = [...ARTISTS].sort((x, y) => mockVotes(y) - mockVotes(x));
@@ -1110,7 +1178,9 @@
 
     updatePageMeta({
       title: `${a.stage_name} · Rep`,
-      description: `${a.stage_name} — ${a.city_represented || 'DHH'} · ${a.era || ''} · India rank #${rank}. Spotify, tracks, similar artists.`
+      description: bio && bio.headline
+        ? `${bio.headline} · ${lower(a.city_represented || 'india')} · india rank #${rank} on Rep`
+        : `${a.stage_name} · ${a.city_represented || 'DHH'} · ${a.era || ''} · india rank #${rank}. spotify, tracks, similar artists.`
     });
     const subBits = [];
     if (a.real_name) subBits.push(a.real_name);
@@ -1352,8 +1422,8 @@
       pool: ARTISTS.slice()
     };
     try {
-      const saved = JSON.parse(localStorage.getItem('rep:tier_board') || 'null');
-      if (saved?.tiers) {
+      const saved = lsJson('rep:tier_board', null);
+      if (saved && saved.tiers && typeof saved.tiers === 'object' && !Array.isArray(saved.tiers)) {
         state.tiers = { S: [], A: [], B: [], C: [], D: [], ...saved.tiers };
         const placed = new Set(['S', 'A', 'B', 'C', 'D'].flatMap(t => state.tiers[t] || []));
         state.pool = ARTISTS.filter(a => !placed.has(a.slug));
@@ -1481,16 +1551,32 @@
       btn.disabled = true; btn.textContent = 'rendering tier card…';
       try {
         // pull saved handle from last top-5 if present, else anon
-        let handle = '';
-        try { handle = JSON.parse(localStorage.getItem('rep:last_top5') || '{}').handle || ''; } catch {}
+        const handle = (lsJson('rep:last_top5', {}) || {}).handle || '';
         // best-effort ballot · tier rows count on the live board when the API is up
         const filled = Object.fromEntries(Object.entries(state.tiers).filter(([, v]) => v.length));
+        let ballotId = null;
         if (Object.keys(filled).length) {
-          try { await API.post('/lists', { type: 'tier', picks: filled, username: handle || null }); } catch { /* offline */ }
+          try {
+            const res = await API.post('/lists', { type: 'tier', picks: filled, username: handle || null, ts: tsToken() });
+            if (res && res.id) ballotId = res.id;
+            tsReset();
+          } catch (e) {
+            if (e && e.code === 'turnstile') {
+              tsReset();
+              toast('human check did not clear · wait a beat, then export again');
+              return;
+            }
+            /* offline · card still renders */
+          }
         }
         const canvas = await buildTierCard({ tiers: state.tiers, handle });
+        if (ballotId) {
+          canvas.toBlob(b => {
+            if (b) fetch('/api/lists/' + ballotId + '/card', { method: 'POST', body: b, credentials: 'same-origin' }).catch(() => {});
+          }, 'image/png');
+        }
         const filename = `rep-tier-${(handle || 'anon')}.png`;
-        showShareModal('your DHH tier list', canvas, filename);
+        showShareModal('your DHH tier list', canvas, filename, { link: ballotId ? location.origin + '/l/' + ballotId : null });
       } catch (e) {
         console.error(e);
         toast('PNG render hit an error · try refreshing');
@@ -1603,10 +1689,14 @@
       const btn = $('#suggestSubmit');
       btn.disabled = true; const orig = btn.textContent; btn.textContent = 'sent ✓';
       try {
-        await API.post('/suggestions', { stage_name: name, justification: why || null });
+        await API.post('/suggestions', { stage_name: name, justification: why || null, ts: tsToken() });
+        tsReset();
         $('#suggestName').value = ''; $('#suggestWhy').value = '';
         await refresh();
-      } catch { btn.textContent = 'retry'; }
+      } catch (e) {
+        if (e && e.code === 'turnstile') { tsReset(); toast('human check did not clear · try again'); }
+        btn.textContent = 'retry';
+      }
       finally { setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 1200); }
     });
 
@@ -1726,7 +1816,7 @@
      ============================================================ */
   async function initBeefs() {
     await loadArtists();
-    const data = await (await fetch('/data/beefs.json?v=20260610-1')).json();
+    const data = await (await fetch('/data/beefs.json?v=20260614-1')).json();
     const root = $('#beefRoot');
     root.innerHTML = data.beefs.map(b => {
       const a = BY_SLUG[b.actor_a], c = BY_SLUG[b.actor_b];
@@ -1759,7 +1849,7 @@
      slang · render glossary
      ============================================================ */
   async function initSlang() {
-    const data = await (await fetch('/data/slang.json?v=20260610-1')).json();
+    const data = await (await fetch('/data/slang.json?v=20260614-1')).json();
     const terms = data.terms || [];
     const wrap = $('#slangSearchWrap');
     if (wrap) {
@@ -1789,7 +1879,7 @@
      timeline · milestones
      ============================================================ */
   async function initTimeline() {
-    const data = await (await fetch('/data/timeline.json?v=20260610-1')).json();
+    const data = await (await fetch('/data/timeline.json?v=20260614-1')).json();
     const milestones = data.milestones || [];
     const decadeOf = (y) => `${Math.floor(Number(y) / 10) * 10}s`;
     const decades = unique(milestones.map(m => decadeOf(m.year))).sort();
@@ -1927,6 +2017,7 @@
             <div class="compare-col__photo">${photoHtml(a)}</div>
             <div class="compare-col__name">${esc(a.stage_name)}</div>
             <div class="compare-col__sub">${esc([a.city_represented, a.era].filter(Boolean).join(' · ').toLowerCase())}</div>
+            ${bioHook(a) ? `<p class="compare-col__hook">${esc(bioHook(a))}</p>` : ''}
             <dl>
               <dt>india rank</dt><dd class="numeric ${win(rk(a), rk(b), true)}">#${rk(a)}</dd>
               <dt>${esc(shareLbl)}</dt><dd class="numeric ${win(pctOf(a, total), pctOf(b, total))}">${pctOf(a, total).toFixed(2)}%</dd>
@@ -1944,6 +2035,7 @@
             <div class="compare-col__photo">${photoHtml(b)}</div>
             <div class="compare-col__name">${esc(b.stage_name)}</div>
             <div class="compare-col__sub">${esc([b.city_represented, b.era].filter(Boolean).join(' · ').toLowerCase())}</div>
+            ${bioHook(b) ? `<p class="compare-col__hook">${esc(bioHook(b))}</p>` : ''}
             <dl>
               <dt>india rank</dt><dd class="numeric ${win(rk(b), rk(a), true)}">#${rk(b)}</dd>
               <dt>${esc(shareLbl)}</dt><dd class="numeric ${win(pctOf(b, total), pctOf(a, total))}">${pctOf(b, total).toFixed(2)}%</dd>
@@ -1976,7 +2068,7 @@
   async function initMixtape() {
     await loadArtists();
     const MAX = 10;
-    const state = JSON.parse(localStorage.getItem('rep:mixtape') || '{"picks": []}');
+    const state = lsJson('rep:mixtape', { picks: [] });
     if (!Array.isArray(state.picks)) state.picks = [];
 
     const rootList = $('#mixtapeList');
@@ -2085,7 +2177,7 @@
      ============================================================ */
   async function initLabels() {
     await loadArtists();
-    const data = await (await fetch('/data/labels.json?v=20260610-1')).json();
+    const data = await (await fetch('/data/labels.json?v=20260614-1')).json();
     $('#labelsRoot').innerHTML = data.labels.map(L => {
       const roster = (L.roster_slugs || []).map(s => BY_SLUG[s]).filter(Boolean);
       return `
@@ -2108,7 +2200,7 @@
      ============================================================ */
   async function initProducers() {
     await loadArtists();
-    const data = await (await fetch('/data/producers.json?v=20260610-1')).json();
+    const data = await (await fetch('/data/producers.json?v=20260614-1')).json();
     $('#producersRoot').innerHTML = data.producers.map(p => {
       const credits = (p.credits_for_slugs || []).map(s => BY_SLUG[s]?.stage_name).filter(Boolean).join(' · ');
       return `
@@ -2127,7 +2219,7 @@
      ============================================================ */
   async function initCyphers() {
     await loadArtists();
-    const data = await (await fetch('/data/cyphers.json?v=20260610-1')).json();
+    const data = await (await fetch('/data/cyphers.json?v=20260614-1')).json();
     $('#cyphersRoot').innerHTML = data.cyphers.map(c => {
       const artists = (c.artist_slugs || []).map(s => BY_SLUG[s]).filter(Boolean);
       return `
@@ -2147,6 +2239,77 @@
           </div>
         </article>`;
     }).join('');
+  }
+
+  /* ============================================================
+     ballot permalink · /l/:id · server injects the OG tags,
+     this renders the actual ballot for humans
+     ============================================================ */
+  async function initListPage() {
+    await loadArtists();
+    const root = $('#listRoot');
+    if (!root) return;
+    const m = location.pathname.match(/^\/l\/([a-zA-Z0-9]+)/);
+    if (!m) { root.innerHTML = '<p class="empty-grid">no ballot id in this link.</p>'; return; }
+    let row = null;
+    try { row = await API.get('/lists/' + m[1]); } catch {}
+    if (!row || row.error) {
+      root.innerHTML = '<p class="empty-grid">ballot not found · the link may be dead or the ballot was taken down.</p>';
+      return;
+    }
+    const picks = row.picks;
+    const who = row.username ? '@' + row.username : 'anon';
+    const when = row.created_at
+      ? new Date(row.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '';
+    let rowsHtml = '';
+    if (Array.isArray(picks)) {
+      rowsHtml = picks.map((s, i) => {
+        const a = BY_SLUG[s];
+        return `
+          <a class="lb-row" href="/artist.html?slug=${esc(s)}">
+            <span class="lb-row__rank">${String(i + 1).padStart(2, '0')}</span>
+            <span class="lb-row__photo">${a ? photoHtml(a) : ''}</span>
+            <span class="lb-row__name">${esc(a ? a.stage_name : s)}</span>
+            <span class="lb-row__city">${esc(a ? lower(a.city_represented || '') : '')}</span>
+          </a>`;
+      }).join('');
+    } else if (picks && typeof picks === 'object') {
+      rowsHtml = ['S', 'A', 'B', 'C', 'D'].filter(t => Array.isArray(picks[t]) && picks[t].length).map(t => `
+        <div class="lv-tier">
+          <span class="lv-tier__badge">${t}</span>
+          <div class="lv-tier__names">
+            ${picks[t].map(s => {
+              const a = BY_SLUG[s];
+              return `<a class="chip" href="/artist.html?slug=${esc(s)}">${esc(a ? a.stage_name.toLowerCase() : s)}</a>`;
+            }).join('')}
+          </div>
+        </div>`).join('');
+    }
+    updatePageMeta({
+      title: `${who}'s ${row.type === 'tier' ? 'tier board' : 'DHH top 5'} · Rep`,
+      description: `${who}'s ballot on Rep · agree or drop your own.`
+    });
+    root.innerHTML = `
+      <div class="lv-head">
+        <div class="chapter">
+          <span class="chapter__num">${row.type === 'tier' ? 'tier board' : 'top 5'}</span>
+          <h1 class="chapter__title">${esc(who)}'s ballot</h1>
+        </div>
+        ${when ? `<p class="lv-when">dropped ${esc(when)}</p>` : ''}
+        ${row.defense ? `<blockquote class="lv-defense">"${esc(row.defense)}"</blockquote>` : ''}
+      </div>
+      <div class="lv-rows">${rowsHtml || '<p class="empty-grid">empty ballot.</p>'}</div>
+      <div class="lv-actions">
+        <button type="button" class="feature__cta" id="lvUpvote">▲ respect · ${Number(row.upvotes) || 0}</button>
+        <a class="feature__cta" href="${row.type === 'tier' ? '/tier.html' : '/build.html'}">disagree? drop your own →</a>
+      </div>`;
+    $('#lvUpvote')?.addEventListener('click', async () => {
+      try {
+        const r = await API.post('/lists/' + m[1] + '/upvote');
+        $('#lvUpvote').textContent = `▲ respect · ${Number(r.upvotes) || 0}`;
+      } catch { toast('upvote failed · try again'); }
+    });
   }
 
   /* ============================================================
@@ -2518,7 +2681,7 @@
     }
   }
 
-  function showShareModal(title, canvas, filename) {
+  function showShareModal(title, canvas, filename, opts = {}) {
     let modal = $('#shareModal');
     if (!modal) {
       modal = document.createElement('div');
@@ -2536,6 +2699,7 @@
           <div id="shareCanvasWrap"></div>
           <div class="share-modal__actions">
             <button type="button" class="btn-stamp" id="downloadPng">download PNG →</button>
+            <button type="button" class="dice-btn" id="copyShareLink" hidden>copy link</button>
             <button type="button" class="dice-btn" id="shareNative" hidden>share →</button>
             <button type="button" class="dice-btn" id="closeShare">close</button>
           </div>
@@ -2547,6 +2711,19 @@
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.classList.contains('is-open')) closeShareModal();
       });
+    }
+    const linkBtn = $('#copyShareLink');
+    if (linkBtn) {
+      if (opts.link) {
+        linkBtn.hidden = false;
+        linkBtn.onclick = () => {
+          navigator.clipboard.writeText(opts.link).then(() => {
+            const o = linkBtn.textContent;
+            linkBtn.textContent = 'link copied ✓';
+            setTimeout(() => { linkBtn.textContent = o; }, 2400);
+          }).catch(() => prompt('your ballot link', opts.link));
+        };
+      } else linkBtn.hidden = true;
     }
     $('#shareModalTitle').textContent = title;
     const wrap = $('#shareCanvasWrap');

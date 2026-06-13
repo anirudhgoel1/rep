@@ -12,7 +12,7 @@ const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
 
 /* curated marquee 1v1s · cycled by day so the daily debate stays interesting
    without needing a cron. each is [a_slug, b_slug, theme]. */
-const DAILY_POOL = [
+export const DAILY_POOL = [
   ['krsna', 'seedhe-maut', 'delhi pen game · solo vs duo'],
   ['hanumankind', 'mc-altaf', 'global trap vs dharavi street'],
   ['yashraj', 'the-siege', 'mumbai new wave · two pens'],
@@ -30,7 +30,8 @@ const DAILY_POOL = [
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (url.pathname.startsWith('/api/')) {
+    const path = url.pathname;
+    if (path.startsWith('/api/')) {
       try {
         return await handleApi(request, env, url);
       } catch (err) {
@@ -38,10 +39,205 @@ export default {
         return json({ error: 'server_error' }, 500);
       }
     }
+    if (path.startsWith('/img/')) return handleImage(request, env, url);
+    if (path.startsWith('/cards/')) return handleCard(request, env, url);
+    if (/^\/l\/[a-zA-Z0-9]{4,12}$/.test(path)) return handleListPage(request, env, url);
+    if (path === '/artist' || path === '/artist.html') return handleArtistPage(request, env, url);
     // everything else is the static site
     return env.ASSETS.fetch(request);
   },
 };
+
+/* ---------------------------------------------------------- page injection
+   Artist pages and ballot share pages get their meta tags rewritten
+   server-side so WhatsApp/Twitter scrapers (which run no JS) see the real
+   title, description and image. Any failure falls back to the raw asset. */
+
+const ORIGIN = 'https://rep.anirudhgoel.xyz';
+
+let _rosterPromise = null;
+function loadRoster(env, url) {
+  if (!_rosterPromise) {
+    _rosterPromise = Promise.all([
+      env.ASSETS.fetch(new URL('/data/artists.json', url)).then(r => r.json()),
+      env.ASSETS.fetch(new URL('/data/bios.json', url)).then(r => r.json()).catch(() => ({})),
+    ]).then(([a, b]) => ({
+      bySlug: Object.fromEntries((a.artists || []).map(x => [x.slug, x])),
+      bios: (b && b.bios) || {},
+    })).catch(err => { _rosterPromise = null; throw err; });
+  }
+  return _rosterPromise;
+}
+
+function setContent(value) {
+  return { element(e) { e.setAttribute('content', value); } };
+}
+
+function rewriteMeta(assetResp, { title, desc, canonical, ogImage, jsonLd }) {
+  let rw = new HTMLRewriter()
+    .on('title', { element(e) { e.setInnerContent(title); } })
+    .on('meta[name="description"]', setContent(desc))
+    .on('meta[property="og:title"]', setContent(title))
+    .on('meta[property="og:description"]', setContent(desc))
+    .on('meta[property="og:url"]', setContent(canonical))
+    .on('meta[name="twitter:title"]', setContent(title))
+    .on('meta[name="twitter:description"]', setContent(desc))
+    .on('link[rel="canonical"]', { element(e) { e.setAttribute('href', canonical); } });
+  if (ogImage) {
+    rw = rw
+      .on('meta[property="og:image"]', setContent(ogImage.url))
+      .on('meta[property="og:image:width"]', setContent(String(ogImage.w)))
+      .on('meta[property="og:image:height"]', setContent(String(ogImage.h)))
+      .on('meta[name="twitter:image"]', setContent(ogImage.url));
+  }
+  if (jsonLd) {
+    const safe = JSON.stringify(jsonLd).replace(/</g, '\\u003c');
+    rw = rw.on('head', { element(e) { e.append(`<script type="application/ld+json">${safe}</script>`, { html: true }); } });
+  }
+  return rw.transform(assetResp);
+}
+
+async function handleArtistPage(request, env, url) {
+  const asset = () => env.ASSETS.fetch(new URL('/artist', url));
+  try {
+    const slug = url.searchParams.get('slug') || '';
+    if (!/^[a-z0-9-]{1,60}$/.test(slug)) return asset();
+    const { bySlug, bios } = await loadRoster(env, url);
+    const a = bySlug[slug];
+    if (!a) return asset();
+    const bio = bios[slug];
+    const title = `${a.stage_name} · Rep`;
+    const desc = (bio && bio.headline
+      ? `${bio.headline} · ${(a.city_represented || 'india').toLowerCase()} · rank, tracks, 1v1s on Rep`
+      : `${a.stage_name} · ${a.city_represented || 'DHH'} · profile, tracks and rank on Rep`).slice(0, 200);
+    const canonical = `${ORIGIN}/artist?slug=${slug}`;
+    const ogImage = a.image_url ? { url: `${ORIGIN}/img/${slug}`, w: 640, h: 640 } : null;
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'MusicGroup',
+      name: a.stage_name,
+      url: canonical,
+      genre: a.subgenre || 'Hip Hop',
+      ...(a.real_name ? { alternateName: a.real_name } : {}),
+      ...(a.image_url ? { image: `${ORIGIN}/img/${slug}` } : {}),
+      ...(bio && bio.headline ? { description: bio.headline } : {}),
+      ...(a.city_represented ? { foundingLocation: { '@type': 'Place', name: a.city_represented } } : {}),
+      sameAs: [
+        a.spotify_url,
+        a.wikipedia_url,
+        a.instagram_handle ? 'https://instagram.com/' + String(a.instagram_handle).replace(/^@/, '') : null,
+      ].filter(Boolean),
+    };
+    return rewriteMeta(await asset(), { title, desc, canonical, ogImage, jsonLd });
+  } catch (err) {
+    console.error('artist inject failed', err);
+    return asset();
+  }
+}
+
+async function handleListPage(request, env, url) {
+  const asset = () => env.ASSETS.fetch(new URL('/l', url));
+  try {
+    const id = url.pathname.split('/')[2];
+    const row = await env.DB.prepare(
+      `SELECT id, username, type, picks, defense FROM lists WHERE id = ?1 AND is_hidden = 0`
+    ).bind(id).first().catch(() => null);
+    if (!row) return asset();
+    const { bySlug } = await loadRoster(env, url);
+    const picks = safeParse(row.picks);
+    let names = [];
+    if (Array.isArray(picks)) {
+      names = picks.map(s => (bySlug[s] && bySlug[s].stage_name) || s);
+    } else if (picks && typeof picks === 'object') {
+      names = [...(picks.S || []), ...(picks.A || [])].map(s => (bySlug[s] && bySlug[s].stage_name) || s);
+    }
+    const who = row.username ? `@${row.username}` : 'someone';
+    const title = row.type === 'tier' ? `${who} tiered the scene · Rep` : `${who} dropped a DHH top 5 · Rep`;
+    const body = row.type === 'tier'
+      ? `top of the board: ${names.slice(0, 5).join(', ')}`
+      : names.slice(0, 5).map((n, i) => `${i + 1}. ${n}`).join(' · ');
+    const desc = (body + (row.defense ? ` · "${row.defense}"` : '') + ' · agree? drop your own.').slice(0, 240);
+    const hasCard = await env.MEDIA.head(`cards/${id}.png`).catch(() => null);
+    const ogImage = hasCard
+      ? { url: `${ORIGIN}/cards/${id}.png`, w: 1080, h: 1350 }
+      : { url: `${ORIGIN}/og.png`, w: 1200, h: 630 };
+    return rewriteMeta(await asset(), { title, desc, canonical: `${ORIGIN}/l/${id}`, ogImage });
+  } catch (err) {
+    console.error('list inject failed', err);
+    return asset();
+  }
+}
+
+/* ---------------------------------------------------------- media routes */
+
+/* /img/:slug · R2 mirror first, then live roster image_url, else 404 */
+async function handleImage(request, env, url) {
+  const m = url.pathname.match(/^\/img\/([a-z0-9-]{1,60})$/);
+  if (!m) return new Response('not found', { status: 404 });
+  try {
+    const obj = await env.MEDIA.get(`img/${m[1]}.jpg`);
+    if (obj) {
+      return new Response(obj.body, {
+        headers: {
+          'content-type': (obj.httpMetadata && obj.httpMetadata.contentType) || 'image/jpeg',
+          'cache-control': 'public, max-age=604800',
+          etag: obj.httpEtag,
+        },
+      });
+    }
+  } catch { /* R2 hiccup: fall through to redirect */ }
+  try {
+    const { bySlug } = await loadRoster(env, url);
+    const a = bySlug[m[1]];
+    if (a && a.image_url) return Response.redirect(a.image_url, 302);
+  } catch { /* roster unavailable */ }
+  return new Response('not found', { status: 404 });
+}
+
+/* /cards/:id.png · ballot share card from R2, falls back to the site OG */
+async function handleCard(request, env, url) {
+  const m = url.pathname.match(/^\/cards\/([a-zA-Z0-9]{4,12})\.png$/);
+  if (!m) return new Response('not found', { status: 404 });
+  try {
+    const obj = await env.MEDIA.get(`cards/${m[1]}.png`);
+    if (obj) {
+      return new Response(obj.body, {
+        headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400', etag: obj.httpEtag },
+      });
+    }
+  } catch { /* fall through */ }
+  return Response.redirect(new URL('/og.png', url).toString(), 302);
+}
+
+/* ---------------------------------------------------------- turnstile */
+
+/* fail-closed on an explicit "no", fail-open if siteverify itself is down:
+   a broken bot-check must never kill real ballots. */
+async function turnstileOk(env, request, token) {
+  if (!env.TURNSTILE_SECRET) return true;            // not configured yet
+  if (env.TURNSTILE_ENFORCE !== '1') return true;    // soft mode
+  if (!token || typeof token !== 'string' || token.length > 3000) return false;
+  try {
+    const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        secret: env.TURNSTILE_SECRET,
+        response: token,
+        remoteip: request.headers.get('cf-connecting-ip') || undefined,
+      }),
+    });
+    const j = await r.json();
+    return !!j.success;
+  } catch {
+    return true;
+  }
+}
+
+function adminOk(env, request) {
+  const h = request.headers.get('authorization') || '';
+  return !!env.ADMIN_TOKEN && h === `Bearer ${env.ADMIN_TOKEN}`;
+}
 
 /* ---------------------------------------------------------------- helpers */
 
@@ -182,6 +378,9 @@ async function handleApi(request, env, url) {
   // create a list (top5 / tier) + cast aggregate votes -----------------
   if (route('POST', /^\/api\/lists$/)) {
     const body = await readJson(request);
+    if (!(await turnstileOk(env, request, body.ts))) {
+      return withCookie(json({ error: 'turnstile' }, 403), setCookie);
+    }
     const type = ['top5', 'tier', 'city', 'subgenre', 'era'].includes(body.type) ? body.type : 'top5';
     const scope = body.scope ? String(body.scope).slice(0, 40) : null;
     const picks = body.picks;
@@ -305,8 +504,7 @@ async function handleApi(request, env, url) {
     const date = istDateKey();
     let m = await db.prepare(`SELECT * FROM daily_matchup WHERE date = ?1`).bind(date).first();
     if (!m) {
-      const idx = dayIndex(date) % DAILY_POOL.length;
-      const [a, b, theme] = DAILY_POOL[idx];
+      const [a, b, theme] = await pickDailyPair(db, date);
       try {
         await db.prepare(
           `INSERT INTO daily_matchup (date, artist_a, artist_b, theme) VALUES (?1,?2,?3,?4)`
@@ -345,6 +543,9 @@ async function handleApi(request, env, url) {
   // suggestions · "who's missing?" ------------------------------------
   if (route('POST', /^\/api\/suggestions$/)) {
     const body = await readJson(request);
+    if (!(await turnstileOk(env, request, body.ts))) {
+      return withCookie(json({ error: 'turnstile' }, 403), setCookie);
+    }
     const name = String(body.stage_name || '').trim().slice(0, 60);
     const why = body.justification ? String(body.justification).slice(0, 200) : null;
     if (!name) return withCookie(json({ error: 'name_required' }, 400), setCookie);
@@ -361,6 +562,59 @@ async function handleApi(request, env, url) {
        WHERE status = 'pending' ORDER BY upvotes DESC, created_at DESC LIMIT ?1`
     ).bind(limit).all();
     return withCookie(json(rows.results || []), setCookie);
+  }
+
+  // ballot share card · creator uploads the rendered PNG once ----------
+  if (route('POST', /^\/api\/lists\/[a-zA-Z0-9]+\/card$/)) {
+    const id = param(/^\/api\/lists\/([a-zA-Z0-9]+)\/card$/);
+    const owner = await db.prepare(`SELECT user_id FROM lists WHERE id = ?1 AND is_hidden = 0`).bind(id).first();
+    if (!owner || owner.user_id !== uid) return withCookie(json({ error: 'not_yours' }, 403), setCookie);
+    const buf = await request.arrayBuffer();
+    if (buf.byteLength < 8 || buf.byteLength > 2000000) return withCookie(json({ error: 'bad_size' }, 400), setCookie);
+    const sig = new Uint8Array(buf.slice(0, 4));
+    if (!(sig[0] === 0x89 && sig[1] === 0x50 && sig[2] === 0x4e && sig[3] === 0x47)) {
+      return withCookie(json({ error: 'not_png' }, 400), setCookie);
+    }
+    await env.MEDIA.put(`cards/${id}.png`, buf, { httpMetadata: { contentType: 'image/png' } });
+    return withCookie(json({ ok: true, url: `/cards/${id}.png` }), setCookie);
+  }
+
+  // admin · moderation, token-gated ------------------------------------
+  if (route('GET', /^\/api\/admin\/suggestions$/)) {
+    if (!adminOk(env, request)) return json({ error: 'forbidden' }, 403);
+    const status = url.searchParams.get('status') || 'pending';
+    const rows = await db.prepare(
+      `SELECT * FROM suggestions WHERE status = ?1 ORDER BY upvotes DESC, created_at DESC LIMIT 100`
+    ).bind(status).all();
+    return json(rows.results || []);
+  }
+
+  if (route('GET', /^\/api\/admin\/lists$/)) {
+    if (!adminOk(env, request)) return json({ error: 'forbidden' }, 403);
+    const rows = await db.prepare(
+      `SELECT id, username, type, picks, defense, upvotes, is_hidden, created_at
+       FROM lists ORDER BY created_at DESC LIMIT 100`
+    ).all();
+    return json((rows.results || []).map(r => ({ ...r, picks: safeParse(r.picks) })));
+  }
+
+  if (route('POST', /^\/api\/admin\/lists\/[a-zA-Z0-9]+\/hide$/)) {
+    if (!adminOk(env, request)) return json({ error: 'forbidden' }, 403);
+    const id = param(/^\/api\/admin\/lists\/([a-zA-Z0-9]+)\/hide$/);
+    const body = await readJson(request);
+    const hidden = body.hidden === false ? 0 : 1;
+    await db.prepare(`UPDATE lists SET is_hidden = ?2 WHERE id = ?1`).bind(id, hidden).run();
+    return json({ id, is_hidden: hidden });
+  }
+
+  if (route('POST', /^\/api\/admin\/suggestions\/[0-9]+\/status$/)) {
+    if (!adminOk(env, request)) return json({ error: 'forbidden' }, 403);
+    const id = parseInt(param(/^\/api\/admin\/suggestions\/([0-9]+)\/status$/), 10);
+    const body = await readJson(request);
+    const status = ['pending', 'admitted', 'rejected'].includes(body.status) ? body.status : null;
+    if (!status) return json({ error: 'bad_status' }, 400);
+    await db.prepare(`UPDATE suggestions SET status = ?2 WHERE id = ?1`).bind(id, status).run();
+    return json({ id, status });
   }
 
   if (route('POST', /^\/api\/suggestions\/[0-9]+\/upvote$/)) {
@@ -393,4 +647,40 @@ function clampInt(v, dflt, lo, hi) { const n = parseInt(v, 10); if (isNaN(n)) re
 function dayIndex(dateKey) {
   // days since epoch from a YYYY-MM-DD key
   return Math.floor(Date.parse(dateKey + 'T00:00:00Z') / 86400000);
+}
+
+/* daily pair · every 3rd day a curated classic, otherwise generated from the
+   roster: same city or same era, within one popularity tier, deterministic
+   per date so every visitor sees the same matchup. */
+async function pickDailyPair(db, date) {
+  const di = dayIndex(date);
+  if (di % 3 === 0) return DAILY_POOL[Math.floor(di / 3) % DAILY_POOL.length];
+  try {
+    const res = await db.prepare(
+      `SELECT slug, city_represented AS city, era, popularity_tier AS tier
+       FROM artists WHERE is_votable = 1 ORDER BY slug`
+    ).all();
+    const rows = res.results || [];
+    const tierN = { S: 5, A: 4, B: 3, C: 2, D: 1 };
+    const pairs = [];
+    for (let i = 0; i < rows.length; i++) {
+      for (let j = i + 1; j < rows.length; j++) {
+        const a = rows[i], b = rows[j];
+        const sameCity = a.city && a.city === b.city;
+        const sameEra = !sameCity && a.era && a.era === b.era;
+        if (!sameCity && !sameEra) continue;
+        if (Math.abs((tierN[a.tier] || 3) - (tierN[b.tier] || 3)) > 1) continue;
+        pairs.push([
+          a.slug, b.slug,
+          sameCity ? `${a.city.toLowerCase()} · city pride 1v1` : `${a.era.toLowerCase()} · era battle`,
+        ]);
+      }
+    }
+    if (pairs.length) {
+      // golden-ratio hash spreads consecutive days across the pair space
+      const idx = Math.abs(Math.imul(di, 2654435761)) % pairs.length;
+      return pairs[idx];
+    }
+  } catch { /* unseeded db · fall back to curated */ }
+  return DAILY_POOL[di % DAILY_POOL.length];
 }
