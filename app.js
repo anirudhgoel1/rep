@@ -42,11 +42,11 @@
   async function loadArtists() {
     if (ARTISTS) return ARTISTS;
     // bios load in parallel · cards show editorial hooks when available
-    const biosP = fetch('/data/bios.json?v=20260614-1')
+    const biosP = fetch('/data/bios.json?v=20260614-2')
       .then(r => r.json())
       .then(j => { BIOS = (j && j.bios) || {}; })
       .catch(() => {});
-    const r = await fetch('/data/artists.json?v=20260614-1');
+    const r = await fetch('/data/artists.json?v=20260614-2');
     const j = await r.json();
     ROSTER_META = j._meta || {};
     ARTISTS = (j.artists || []).filter(a => a.is_votable !== 0);
@@ -656,7 +656,7 @@
 
     // beef preview · pull from beefs.json
     try {
-      const beefData = await (await fetch('/data/beefs.json?v=20260614-1')).json();
+      const beefData = await (await fetch('/data/beefs.json?v=20260614-2')).json();
       const beefs = $('#beefPreview');
       if (beefs && beefData.beefs) {
         beefs.innerHTML = beefData.beefs.slice(0, 3).map(b => {
@@ -700,32 +700,45 @@
       };
       if (aa && bb) {
         const sideStyle = 'text-align:left; width:100%;';
+        const themeLine = () => {
+          if (!duelTheme) return;
+          const t = st.va + st.vb;
+          if (!live) { duelTheme.innerHTML = `${esc(theme)} · preview pair · votes stay local until API ships`; return; }
+          duelTheme.innerHTML = st.voted
+            ? `${esc(theme)} · ${t.toLocaleString('en-IN')} head${t === 1 ? '' : 's'} voted${st.pick ? ` · you picked ${esc(BY_SLUG[st.pick]?.stage_name || '')}` : ''}`
+            : `${esc(theme)} · tap a side · one vote per head`;
+        };
         const paint = () => {
           const tot = st.va + st.vb;
           const showRes = st.voted;
           const pa = tot ? Math.round(st.va / tot * 100) : 0;
           const pb = tot ? Math.round(st.vb / tot * 100) : 0;
-          const tag = (slug, pct, n) =>
-            (showRes ? ` · ${pct}%` : '') + (st.pick === slug ? ' · your pick' : '');
-          duel.innerHTML = `
-            <button class="duel__side" data-slug="${esc(aSlug)}" ${st.voted ? 'disabled' : ''} style="${sideStyle}">
-              <div class="duel__photo">${photoHtml(aa)}</div>
-              <div class="duel__name">${esc(aa.stage_name)}</div>
-              <div class="duel__city">${esc(lower(aa.city_represented))}${tag(aSlug, pa, st.va)}</div>
-            </button>
-            <div class="duel__vs">vs</div>
-            <button class="duel__side" data-slug="${esc(bSlug)}" ${st.voted ? 'disabled' : ''} style="${sideStyle}">
-              <div class="duel__photo">${photoHtml(bb)}</div>
-              <div class="duel__name">${esc(bb.stage_name)}</div>
-              <div class="duel__city">${esc(lower(bb.city_represented))}${tag(bSlug, pb, st.vb)}</div>
+          const side = (slug, a, votes, pct, otherVotes) => {
+            const mine = st.pick === slug;
+            const win = showRes && votes > otherVotes;
+            const result = showRes
+              ? `<div class="duel__tally ${win ? 'is-win' : ''}"><span class="duel__tally-pct">${pct}%</span><span class="duel__tally-n">${votes.toLocaleString('en-IN')} vote${votes === 1 ? '' : 's'}</span></div>`
+              : `<div class="duel__cta">tap to vote →</div>`;
+            return `
+            <button class="duel__side ${mine ? 'is-pick' : ''}" data-slug="${esc(slug)}" ${st.voted ? 'disabled' : ''} style="${sideStyle}">
+              <div class="duel__photo">${photoHtml(a)}</div>
+              <div class="duel__name">${esc(a.stage_name)}</div>
+              <div class="duel__city">${esc(lower(a.city_represented))}${mine ? ' · your pick' : ''}</div>
+              ${result}
             </button>`;
+          };
+          duel.innerHTML = `
+            ${side(aSlug, aa, st.va, pa, st.vb)}
+            <div class="duel__vs">vs</div>
+            ${side(bSlug, bb, st.vb, pb, st.va)}
+            ${showRes ? `<div class="duel__bar" role="img" aria-label="${esc(aa.stage_name)} ${pa}%, ${esc(bb.stage_name)} ${pb}%"><span class="duel__bar-a" style="width:${pa}%"></span><span class="duel__bar-b" style="width:${pb}%"></span></div>` : ''}`;
           $$('.duel__photo', duel).forEach(el => { el.style.padding = '0'; el.style.overflow = 'hidden'; });
           if (!st.voted) {
-            $$('.duel__side', duel).forEach(side => side.addEventListener('click', async () => {
+            $$('.duel__side', duel).forEach(s => s.addEventListener('click', async () => {
               if (st.voted) return;
               st.voted = true;
               $$('.duel__side', duel).forEach(b => { b.disabled = true; });
-              const pick = side.dataset.slug;
+              const pick = s.dataset.slug;
               try {
                 const res = await API.post('/daily/vote', { pick });
                 st.va = res.votes_a; st.vb = res.votes_b; st.pick = res.pick;
@@ -733,14 +746,12 @@
                 if (pick === aSlug) st.va++; else st.vb++; st.pick = pick;
               }
               paint();
-              if (duelTheme) duelTheme.innerHTML = `${esc(theme)} · you voted · one vote per head`;
+              themeLine();
             }));
           }
         };
         paint();
-        if (duelTheme) duelTheme.innerHTML = live
-          ? `${esc(theme)} · tap a side · one vote per head${st.voted ? ' · you voted' : ''}`
-          : `${esc(theme)} · preview pair · votes stay local until API ships`;
+        themeLine();
       }
     }
 
@@ -843,11 +854,11 @@
       let slangN = 19, tlN = 22, cypherN = 4, labelN = 10, beefN = 3;
       try {
         const [sl, tl, cy, lb, bf] = await Promise.all([
-          fetch('/data/slang.json?v=20260614-1').then(r => r.json()),
-          fetch('/data/timeline.json?v=20260614-1').then(r => r.json()),
-          fetch('/data/cyphers.json?v=20260614-1').then(r => r.json()),
-          fetch('/data/labels.json?v=20260614-1').then(r => r.json()),
-          fetch('/data/beefs.json?v=20260614-1').then(r => r.json()),
+          fetch('/data/slang.json?v=20260614-2').then(r => r.json()),
+          fetch('/data/timeline.json?v=20260614-2').then(r => r.json()),
+          fetch('/data/cyphers.json?v=20260614-2').then(r => r.json()),
+          fetch('/data/labels.json?v=20260614-2').then(r => r.json()),
+          fetch('/data/beefs.json?v=20260614-2').then(r => r.json()),
         ]);
         slangN = sl.terms?.length || slangN;
         tlN = tl.milestones?.length || tlN;
@@ -1713,12 +1724,13 @@
     // pen-game board = real community ballots. streams board stays an editorial
     // estimate (we don't have stream APIs). pull the live tally for pen game.
     let pointsBySlug = {};
+    let ballotsBySlug = {};
     let ballots = 0;
     if (mode === 'respect') {
       try {
         const live = await API.get('/leaderboard?type=top5&scope=all');
         if (live && Array.isArray(live.rows)) {
-          live.rows.forEach(r => { pointsBySlug[r.slug] = r.points; });
+          live.rows.forEach(r => { pointsBySlug[r.slug] = r.points; ballotsBySlug[r.slug] = Number(r.ballots) || 0; });
           ballots = live.ballots || 0;
         }
       } catch { /* worker offline → seed ranking */ }
@@ -1786,12 +1798,16 @@
           pct = pctOf(a, seedTotal).toFixed(2) + '%';
           w = (mockVotes(a) / max) * 100;
         }
+        const vc = ballotsBySlug[a.slug] || 0;
+        const pctCell = usingLive
+          ? `<span class="lb-row__pct lb-row__pct--live"><span class="lb-row__votes">${vc.toLocaleString('en-IN')}</span><span class="lb-row__votes-lbl">on ${vc === 1 ? 'ballot' : 'ballots'}</span><span class="lb-row__share">${pct}</span></span>`
+          : `<span class="lb-row__pct">${pct}</span>`;
         return `
           <a class="lb-row" href="/artist.html?slug=${esc(a.slug)}">
             <span class="lb-row__rank">${String(i+1).padStart(2,'0')}</span>
             <span class="lb-row__photo">${photoHtml(a)}</span>
             <span><span class="lb-row__name">${esc(a.stage_name)}</span><br><span class="lb-row__city">${esc(lower(a.city_represented))}</span></span>
-            <span class="lb-row__pct">${pct}</span>
+            ${pctCell}
             <span class="lb-row__tier" title="${esc(tierLabelName())}">${esc(displayTier(a))}</span>
             <span class="lb-row__bar"><span style="width:${w}%"></span></span>
           </a>`;
@@ -1816,7 +1832,7 @@
      ============================================================ */
   async function initBeefs() {
     await loadArtists();
-    const data = await (await fetch('/data/beefs.json?v=20260614-1')).json();
+    const data = await (await fetch('/data/beefs.json?v=20260614-2')).json();
     const root = $('#beefRoot');
     root.innerHTML = data.beefs.map(b => {
       const a = BY_SLUG[b.actor_a], c = BY_SLUG[b.actor_b];
@@ -1849,7 +1865,7 @@
      slang · render glossary
      ============================================================ */
   async function initSlang() {
-    const data = await (await fetch('/data/slang.json?v=20260614-1')).json();
+    const data = await (await fetch('/data/slang.json?v=20260614-2')).json();
     const terms = data.terms || [];
     const wrap = $('#slangSearchWrap');
     if (wrap) {
@@ -1879,7 +1895,7 @@
      timeline · milestones
      ============================================================ */
   async function initTimeline() {
-    const data = await (await fetch('/data/timeline.json?v=20260614-1')).json();
+    const data = await (await fetch('/data/timeline.json?v=20260614-2')).json();
     const milestones = data.milestones || [];
     const decadeOf = (y) => `${Math.floor(Number(y) / 10) * 10}s`;
     const decades = unique(milestones.map(m => decadeOf(m.year))).sort();
@@ -2177,7 +2193,7 @@
      ============================================================ */
   async function initLabels() {
     await loadArtists();
-    const data = await (await fetch('/data/labels.json?v=20260614-1')).json();
+    const data = await (await fetch('/data/labels.json?v=20260614-2')).json();
     $('#labelsRoot').innerHTML = data.labels.map(L => {
       const roster = (L.roster_slugs || []).map(s => BY_SLUG[s]).filter(Boolean);
       return `
@@ -2200,7 +2216,7 @@
      ============================================================ */
   async function initProducers() {
     await loadArtists();
-    const data = await (await fetch('/data/producers.json?v=20260614-1')).json();
+    const data = await (await fetch('/data/producers.json?v=20260614-2')).json();
     $('#producersRoot').innerHTML = data.producers.map(p => {
       const credits = (p.credits_for_slugs || []).map(s => BY_SLUG[s]?.stage_name).filter(Boolean).join(' · ');
       return `
@@ -2219,7 +2235,7 @@
      ============================================================ */
   async function initCyphers() {
     await loadArtists();
-    const data = await (await fetch('/data/cyphers.json?v=20260614-1')).json();
+    const data = await (await fetch('/data/cyphers.json?v=20260614-2')).json();
     $('#cyphersRoot').innerHTML = data.cyphers.map(c => {
       const artists = (c.artist_slugs || []).map(s => BY_SLUG[s]).filter(Boolean);
       return `

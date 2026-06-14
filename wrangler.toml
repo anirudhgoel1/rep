@@ -11,8 +11,11 @@ preview_urls = true
 directory = "./"
 not_found_handling = "404-page"
 binding = "ASSETS"
-# worker must see artist pages to inject per-artist OG/meta before assets serve them
-run_worker_first = ["/artist", "/artist.html"]
+# Worker must run first for all dynamic routes. With not_found_handling="404-page"
+# + a 404.html present, the assets layer otherwise serves 404.html for every
+# non-asset path (incl. /api/*) and never invokes the Worker. These globs route
+# API, media, ballot pages and artist OG injection to the Worker before assets.
+run_worker_first = ["/api/*", "/img/*", "/cards/*", "/l/*", "/artist", "/artist.html"]
 
 [vars]
 TURNSTILE_ENFORCE = "1"

@@ -942,6 +942,36 @@ h1, h2, h3, h4, h5, h6 { font-weight: 400; line-height: 1; }
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-mute);
 }
 
+/* duel result · make the vote split unmissable after voting */
+.duel__side.is-pick { background: var(--kraft-2); }
+.duel__cta {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--maroon); padding: 0 16px 16px;
+}
+.duel__tally {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 0 16px 16px; margin-top: auto;
+}
+.duel__tally-pct {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: 44px; line-height: 0.85; letter-spacing: -0.02em;
+  color: var(--ink-mute); font-feature-settings: "tnum" on, "lnum" on;
+}
+.duel__tally.is-win .duel__tally-pct { color: var(--saffron); }
+.duel__tally-n {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-mute);
+}
+.duel__bar {
+  grid-column: 1 / -1;
+  display: flex; height: 16px;
+  border-top: var(--stroke) solid var(--ink);
+  background: var(--kraft);
+}
+.duel__bar-a { background: var(--saffron); }
+.duel__bar-b { background: var(--ink); }
+
 /* ---------- 18 · DEFEND ---------- */
 
 .defend-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: var(--stroke) solid var(--ink); }
@@ -1635,6 +1665,18 @@ select, input[type="search"], input[type="text"] {
   color: var(--saffron); text-align: right;
   font-feature-settings: "tnum" on, "lnum" on;
 }
+/* live board · lead with the vote count, not just a percentage */
+.lb-row__pct--live { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; gap: 2px; }
+.lb-row__votes {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: 24px; letter-spacing: -0.01em; color: var(--saffron);
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+.lb-row__votes-lbl {
+  font-family: var(--font-mono); font-size: 8px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-mute);
+}
+.lb-row__share { font-family: var(--font-mono); font-size: 10px; color: var(--ink-mute); }
 .lb-row__tier {
   font-family: var(--font-display); font-weight: 900;
   font-size: 18px; text-align: center;
@@ -2173,7 +2215,11 @@ body.city-page #cityRoot { padding: var(--s-6) 0 var(--s-7); }
   display: flex; align-items: center; justify-content: center;
   z-index: 100;
   padding: var(--s-4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-fast, 0.18s) ease;
 }
+.share-modal.is-open { opacity: 1; pointer-events: auto; }
 .share-modal__inner {
   background: var(--kraft);
   border: var(--stroke-heavy) solid var(--ink);
