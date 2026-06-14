@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "gen:seed": "node scripts/gen-seed.mjs",
+    "gen:sitemap": "node scripts/gen-sitemap.mjs",
     "preflight": "node scripts/preflight.mjs",
     "bump": "node scripts/bump-version.mjs",
     "verify:wiki": "node scripts/verify-wikipedia.mjs",
