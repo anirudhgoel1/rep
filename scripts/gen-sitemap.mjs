@@ -8,10 +8,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ORIGIN = 'https://rep.anirudhgoel.xyz';
 const artists = JSON.parse(await readFile(join(ROOT, 'data/artists.json'), 'utf8'));
 
+// extensionless form · /leaderboard serves 200, /leaderboard.html 307-redirects to it
 const staticPages = [
-  '/', '/leaderboard.html', '/build.html', '/tier.html', '/compare.html',
-  '/mixtape.html', '/city.html', '/beefs.html', '/timeline.html',
-  '/cyphers.html', '/labels.html', '/producers.html', '/slang.html',
+  '/', '/leaderboard', '/build', '/tier', '/compare',
+  '/mixtape', '/city', '/beefs', '/timeline',
+  '/cyphers', '/labels', '/producers', '/slang',
 ];
 // artist profiles · canonical form matches what the worker injects (/artist?slug=)
 const artistPages = artists.artists

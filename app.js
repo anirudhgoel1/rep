@@ -42,11 +42,11 @@
   async function loadArtists() {
     if (ARTISTS) return ARTISTS;
     // bios load in parallel · cards show editorial hooks when available
-    const biosP = fetch('/data/bios.json?v=20260614-2')
+    const biosP = fetch('/data/bios.json?v=20260626-1')
       .then(r => r.json())
       .then(j => { BIOS = (j && j.bios) || {}; })
       .catch(() => {});
-    const r = await fetch('/data/artists.json?v=20260614-2');
+    const r = await fetch('/data/artists.json?v=20260626-1');
     const j = await r.json();
     ROSTER_META = j._meta || {};
     ARTISTS = (j.artists || []).filter(a => a.is_votable !== 0);
@@ -513,20 +513,22 @@
     setTimeout(reveal, 2200);
   }
 
+  // a failed data fetch must not leave a page stuck on its "loading…" state
+  const pageErr = (e) => { console.error(e); toast('could not load this section · refresh to retry'); };
   if (page === 'landing') initLanding();
   if (page === 'build') initBuilder();
   if (page === 'artist') initArtist();
   if (page === 'city') initCity();
   if (page === 'tier') initTier();
   if (page === 'leaderboard') initLeaderboard();
-  if (page === 'beefs') initBeefs();
-  if (page === 'slang') initSlang();
-  if (page === 'timeline') initTimeline();
+  if (page === 'beefs') initBeefs().catch(pageErr);
+  if (page === 'slang') initSlang().catch(pageErr);
+  if (page === 'timeline') initTimeline().catch(pageErr);
   if (page === 'compare') initCompare();
   if (page === 'mixtape') initMixtape();
-  if (page === 'labels') initLabels();
-  if (page === 'producers') initProducers();
-  if (page === 'cyphers') initCyphers();
+  if (page === 'labels') initLabels().catch(pageErr);
+  if (page === 'producers') initProducers().catch(pageErr);
+  if (page === 'cyphers') initCyphers().catch(pageErr);
   if (page === 'list') initListPage();
 
   // bot check · mounts only on pages that carry a #tsBox container
@@ -656,7 +658,7 @@
 
     // beef preview · pull from beefs.json
     try {
-      const beefData = await (await fetch('/data/beefs.json?v=20260614-2')).json();
+      const beefData = await (await fetch('/data/beefs.json?v=20260626-1')).json();
       const beefs = $('#beefPreview');
       if (beefs && beefData.beefs) {
         beefs.innerHTML = beefData.beefs.slice(0, 3).map(b => {
@@ -854,11 +856,11 @@
       let slangN = 19, tlN = 22, cypherN = 4, labelN = 10, beefN = 3;
       try {
         const [sl, tl, cy, lb, bf] = await Promise.all([
-          fetch('/data/slang.json?v=20260614-2').then(r => r.json()),
-          fetch('/data/timeline.json?v=20260614-2').then(r => r.json()),
-          fetch('/data/cyphers.json?v=20260614-2').then(r => r.json()),
-          fetch('/data/labels.json?v=20260614-2').then(r => r.json()),
-          fetch('/data/beefs.json?v=20260614-2').then(r => r.json()),
+          fetch('/data/slang.json?v=20260626-1').then(r => r.json()),
+          fetch('/data/timeline.json?v=20260626-1').then(r => r.json()),
+          fetch('/data/cyphers.json?v=20260626-1').then(r => r.json()),
+          fetch('/data/labels.json?v=20260626-1').then(r => r.json()),
+          fetch('/data/beefs.json?v=20260626-1').then(r => r.json()),
         ]);
         slangN = sl.terms?.length || slangN;
         tlN = tl.milestones?.length || tlN;
@@ -1124,7 +1126,9 @@
           return;
         }
         if (e && e.code === 'slow_down') { toast('easy · too many drops this hour, try later'); return; }
-        /* offline / static preview · card still renders below */
+        /* offline / static preview, or a server hiccup · the card still renders
+           below, but be honest that the ballot did not reach the live board */
+        toast('saved your card · vote did not reach the board, try lock again later');
       }
 
       // build the share card PNG
@@ -1231,7 +1235,7 @@
           ${bio ? `
             <div class="artist-bio">
               <div class="artist-bio__head">${esc(bio.headline)}</div>
-              ${bio.paragraphs.map(p => `<p class="artist-bio__p">${esc(p)}</p>`).join('')}
+              ${(bio.paragraphs || []).map(p => `<p class="artist-bio__p">${esc(p)}</p>`).join('')}
             </div>` : ''}
           <div class="artist-stats">
             <div class="row"><span>india rank</span><strong>#${rank}</strong></div>
@@ -1318,7 +1322,7 @@
           <div class="bento-city__cta">open city profile →</div>
         </a>`;
     }).join('');
-    updatePageMeta({ title: 'Cities · Rep', description: 'Pick a DHH city or region — Mumbai, Delhi, Punjab, Northeast, and more.' });
+    updatePageMeta({ title: 'Cities · Rep', description: 'Pick a DHH city or region · Mumbai, Delhi, Punjab, Northeast, and more.' });
     $('#cityRoot').innerHTML = `
       <section class="hero" style="padding: 40px 0 24px;">
         <p class="hero__kicker">nine regions · ten cities represented</p>
@@ -1450,7 +1454,15 @@
       state.pool = state.pool.filter(a => a.slug !== slug);
       state.tiers[letter].push(slug);
       render();
-      $('#tierPicker')?.classList.remove('is-open');
+      closeTierPicker();
+    }
+
+    function closeTierPicker() {
+      const picker = $('#tierPicker');
+      if (!picker) return;
+      picker.classList.remove('is-open');
+      const opener = picker._opener;
+      if (opener && opener.focus) opener.focus();
     }
 
     function showTierPicker(slug) {
@@ -1464,8 +1476,10 @@
         picker.setAttribute('role', 'dialog');
         picker.setAttribute('aria-modal', 'true');
         document.body.appendChild(picker);
-        picker.addEventListener('click', (e) => { if (e.target === picker) picker.classList.remove('is-open'); });
+        picker.addEventListener('click', (e) => { if (e.target === picker) closeTierPicker(); });
+        picker.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeTierPicker(); });
       }
+      picker._opener = document.activeElement;
       picker.innerHTML = `
         <div class="tier-picker__inner">
           <p class="tier-picker__title">place <strong>${esc(a.stage_name)}</strong></p>
@@ -1475,8 +1489,9 @@
           <button type="button" class="dice-btn tier-picker__cancel">cancel</button>
         </div>`;
       $$('.tier-picker__btn', picker).forEach(btn => btn.addEventListener('click', () => placeInTier(slug, btn.dataset.tier)));
-      $('.tier-picker__cancel', picker)?.addEventListener('click', () => picker.classList.remove('is-open'));
+      $('.tier-picker__cancel', picker)?.addEventListener('click', () => closeTierPicker());
       picker.classList.add('is-open');
+      $('.tier-picker__btn', picker)?.focus();
     }
 
     render();
@@ -1577,7 +1592,9 @@
               toast('human check did not clear · wait a beat, then export again');
               return;
             }
-            /* offline · card still renders */
+            if (e && e.code === 'slow_down') { toast('easy · too many drops this hour, try later'); return; }
+            /* offline, or a server hiccup · card still renders, but be honest */
+            toast('saved your card · tier did not reach the board, try export again later');
           }
         }
         const canvas = await buildTierCard({ tiers: state.tiers, handle });
@@ -1743,8 +1760,8 @@
       ? `live · ${ballots.toLocaleString('en-IN')} ballot${ballots === 1 ? '' : 's'} counted · ranked by the heads`
       : (mode === 'respect'
           ? (API_LIVE === false
-              ? 'seed ranking · ballots API offline — order is editorial until deploy'
-              : 'seed ranking · no ballots yet — be the first to drop a top 5')
+              ? 'seed ranking · ballots API offline · order is editorial until deploy'
+              : 'seed ranking · no ballots yet · be the first to drop a top 5')
           : 'editorial stream estimate · not community-voted');
 
     const liveScore = (a) => pointsBySlug[a.slug] || 0;
@@ -1792,7 +1809,7 @@
         let pct, w;
         if (usingLive) {
           const p = liveScore(a);
-          pct = p > 0 ? (p / totalPoints * 100).toFixed(2) + '%' : '—';
+          pct = p > 0 ? (p / totalPoints * 100).toFixed(2) + '%' : '·';
           w = (p / max) * 100;
         } else {
           pct = pctOf(a, seedTotal).toFixed(2) + '%';
@@ -1832,7 +1849,7 @@
      ============================================================ */
   async function initBeefs() {
     await loadArtists();
-    const data = await (await fetch('/data/beefs.json?v=20260614-2')).json();
+    const data = await (await fetch('/data/beefs.json?v=20260626-1')).json();
     const root = $('#beefRoot');
     root.innerHTML = data.beefs.map(b => {
       const a = BY_SLUG[b.actor_a], c = BY_SLUG[b.actor_b];
@@ -1865,7 +1882,7 @@
      slang · render glossary
      ============================================================ */
   async function initSlang() {
-    const data = await (await fetch('/data/slang.json?v=20260614-2')).json();
+    const data = await (await fetch('/data/slang.json?v=20260626-1')).json();
     const terms = data.terms || [];
     const wrap = $('#slangSearchWrap');
     if (wrap) {
@@ -1895,7 +1912,7 @@
      timeline · milestones
      ============================================================ */
   async function initTimeline() {
-    const data = await (await fetch('/data/timeline.json?v=20260614-2')).json();
+    const data = await (await fetch('/data/timeline.json?v=20260626-1')).json();
     const milestones = data.milestones || [];
     const decadeOf = (y) => `${Math.floor(Number(y) / 10) * 10}s`;
     const decades = unique(milestones.map(m => decadeOf(m.year))).sort();
@@ -2039,10 +2056,10 @@
               <dt>${esc(shareLbl)}</dt><dd class="numeric ${win(pctOf(a, total), pctOf(b, total))}">${pctOf(a, total).toFixed(2)}%</dd>
               <dt>${esc(tierLbl)}</dt><dd class="numeric">${esc(displayTier(a))}</dd>
               <dt>label</dt><dd>${esc(a.label || 'independent')}</dd>
-              <dt>language</dt><dd>${esc((a.language || []).join(', ').toLowerCase() || '—')}</dd>
+              <dt>language</dt><dd>${esc((a.language || []).join(', ').toLowerCase() || '·')}</dd>
               <dt>subgenre</dt><dd>${esc(a.subgenre.toLowerCase())}</dd>
               <dt>tags</dt><dd>${esc((a.tags || []).join(' · '))}</dd>
-              <dt>three tracks</dt><dd>${esc((a.notable_tracks || []).slice(0, 3).join(' · ') || '—')}</dd>
+              <dt>three tracks</dt><dd>${esc((a.notable_tracks || []).slice(0, 3).join(' · ') || '·')}</dd>
             </dl>
             <a class="feature__cta" href="/artist.html?slug=${esc(a.slug)}">open profile →</a>
           </div>
@@ -2057,17 +2074,17 @@
               <dt>${esc(shareLbl)}</dt><dd class="numeric ${win(pctOf(b, total), pctOf(a, total))}">${pctOf(b, total).toFixed(2)}%</dd>
               <dt>${esc(tierLbl)}</dt><dd class="numeric">${esc(displayTier(b))}</dd>
               <dt>label</dt><dd>${esc(b.label || 'independent')}</dd>
-              <dt>language</dt><dd>${esc((b.language || []).join(', ').toLowerCase() || '—')}</dd>
+              <dt>language</dt><dd>${esc((b.language || []).join(', ').toLowerCase() || '·')}</dd>
               <dt>subgenre</dt><dd>${esc(b.subgenre.toLowerCase())}</dd>
               <dt>tags</dt><dd>${esc((b.tags || []).join(' · '))}</dd>
-              <dt>three tracks</dt><dd>${esc((b.notable_tracks || []).slice(0, 3).join(' · ') || '—')}</dd>
+              <dt>three tracks</dt><dd>${esc((b.notable_tracks || []).slice(0, 3).join(' · ') || '·')}</dd>
             </dl>
             <a class="feature__cta" href="/artist.html?slug=${esc(b.slug)}">open profile →</a>
           </div>
         </div>`;
       updatePageMeta({
         title: `${a.stage_name} vs ${b.stage_name} · Rep`,
-        description: `Compare ${a.stage_name} and ${b.stage_name} — rank, ${shareLbl}, ${tierLbl}, tracks.`
+        description: `Compare ${a.stage_name} and ${b.stage_name} · rank, ${shareLbl}, ${tierLbl}, tracks.`
       });
       const url = new URL(location);
       url.searchParams.set('a', a.slug);
@@ -2193,7 +2210,7 @@
      ============================================================ */
   async function initLabels() {
     await loadArtists();
-    const data = await (await fetch('/data/labels.json?v=20260614-2')).json();
+    const data = await (await fetch('/data/labels.json?v=20260626-1')).json();
     $('#labelsRoot').innerHTML = data.labels.map(L => {
       const roster = (L.roster_slugs || []).map(s => BY_SLUG[s]).filter(Boolean);
       return `
@@ -2216,7 +2233,7 @@
      ============================================================ */
   async function initProducers() {
     await loadArtists();
-    const data = await (await fetch('/data/producers.json?v=20260614-2')).json();
+    const data = await (await fetch('/data/producers.json?v=20260626-1')).json();
     $('#producersRoot').innerHTML = data.producers.map(p => {
       const credits = (p.credits_for_slugs || []).map(s => BY_SLUG[s]?.stage_name).filter(Boolean).join(' · ');
       return `
@@ -2224,7 +2241,7 @@
           <h2 class="prod-card__name">${esc(p.name)}</h2>
           <div class="prod-card__city">${esc(p.city || '')}${p.real_name && p.real_name !== p.name ? ' · ' + esc(p.real_name) : ''}</div>
           <p class="prod-card__blurb">${esc(p.blurb)}</p>
-          <div class="prod-card__credits"><strong>credits</strong> · ${esc(credits || '—')}</div>
+          <div class="prod-card__credits"><strong>credits</strong> · ${esc(credits || '·')}</div>
           ${p.tracks?.length ? `<div class="prod-card__credits"><strong>tracks</strong> · ${esc(p.tracks.join(' · '))}</div>` : ''}
         </article>`;
     }).join('');
@@ -2235,7 +2252,7 @@
      ============================================================ */
   async function initCyphers() {
     await loadArtists();
-    const data = await (await fetch('/data/cyphers.json?v=20260614-2')).json();
+    const data = await (await fetch('/data/cyphers.json?v=20260626-1')).json();
     $('#cyphersRoot').innerHTML = data.cyphers.map(c => {
       const artists = (c.artist_slugs || []).map(s => BY_SLUG[s]).filter(Boolean);
       return `
@@ -2434,7 +2451,7 @@
       const a = picks[i];
       const y = rowsTop + i * rowH;
 
-      // rank number — saffron for #1, ink for rest
+      // rank number · saffron for #1, ink for rest
       ctx.fillStyle = i === 0 ? '#ED8B40' : '#1B1B1B';
       ctx.font = '400 96px Anton, Impact, sans-serif';
       ctx.fillText(String(i + 1).padStart(2, '0'), 60, y + 14);
@@ -2465,7 +2482,7 @@
         ctx.textAlign = 'start';
       }
 
-      // name — auto-shrink if too long
+      // name · auto-shrink if too long
       ctx.fillStyle = '#1B1B1B';
       let nameSize = 50;
       const maxNameW = W - 380;
@@ -2694,6 +2711,8 @@
     if (modal) {
       modal.classList.remove('is-open');
       modal.setAttribute('aria-hidden', 'true');
+      const opener = modal._opener;
+      if (opener && opener.focus) opener.focus();
     }
   }
 
@@ -2771,6 +2790,7 @@
         toast('PNG downloading');
       }, 'image/png');
     };
+    modal._opener = document.activeElement;
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
     $('#shareModalClose')?.focus();

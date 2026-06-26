@@ -113,7 +113,7 @@ h1, h2, h3, h4, h5, h6 { font-weight: 400; line-height: 1; }
   display: inline-flex; align-items: center; gap: 6px;
 }
 .topbar__mark:hover { color: var(--ink); }
-/* the orange-dot logo was an autopsy violation (read as generic SaaS mark) — hidden */
+/* the orange-dot logo was an autopsy violation (read as generic SaaS mark) · hidden */
 .topbar__mark .dot { display: none; }
 
 .topbar__nav { justify-self: center; display: flex; gap: 0; border: var(--stroke) solid var(--ink); }
@@ -1310,7 +1310,7 @@ select, input[type="search"], input[type="text"] {
     text-align: center;
   }
 
-  /* iOS zooms the viewport when a focused field is < 16px — pin form text to
+  /* iOS zooms the viewport when a focused field is < 16px · pin form text to
      16px on phones so focusing search / filters no longer jumps the layout */
   .gsearch input,
   select, input[type="search"], input[type="text"],
@@ -1323,7 +1323,7 @@ select, input[type="search"], input[type="text"] {
 
 /* ============================================================================
    25 · GENERIC `.hero` (used on build / tier / leaderboard / beefs / mixtape /
-   slang / timeline / compare pages — different surface from landing `.hero-dark`)
+   slang / timeline / compare pages · different surface from landing `.hero-dark`)
    ============================================================================ */
 
 .hero { padding: 56px 0 24px; position: relative; }
@@ -1353,10 +1353,10 @@ select, input[type="search"], input[type="text"] {
 }
 
 /* ============================================================================
-   26 · TAPE STRIP (top-of-page magazine decoration — kept hidden per autopsy:
+   26 · TAPE STRIP (top-of-page magazine decoration · kept hidden per autopsy:
    "subtract ornaments aggressively". Class stays so HTML doesn't break.)
    ============================================================================ */
-/* tape strip removed from HTML — rule kept as no-op guard */
+/* tape strip removed from HTML · rule kept as no-op guard */
 
 /* ============================================================================
    27 · BUILD PAGE
@@ -1813,7 +1813,7 @@ body.city-page #cityRoot { padding: var(--s-6) 0 var(--s-7); }
   color: var(--ink);
 }
 .beef-detail__verdict::before {
-  content: "verdict — ";
+  content: "verdict · ";
   font-family: var(--font-mono); font-style: normal;
   font-size: 10px; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--saffron);
@@ -2261,7 +2261,7 @@ body.city-page #cityRoot { padding: var(--s-6) 0 var(--s-7); }
 }
 
 /* ============================================================================
-   38 · ARTIST PAGE EXTRA — pills already styled, but artist note inline style
+   38 · ARTIST PAGE EXTRA · pills already styled, but artist note inline style
    uses var(--ink-soft) which is aliased above. No extra rules needed.
    ============================================================================ */
 

@@ -26,10 +26,16 @@ const rows = artists.map(a => {
 
 const cols = `slug,stage_name,real_name,city_represented,city_of_origin,state,era,subgenre,language,tags,notable_tracks,popularity_tier,active_status,label,spotify_url,spotify_id,wikipedia_url,instagram_handle,image_url,is_votable`;
 
+// Idempotent upsert keyed on slug: updates metadata in place and inserts new
+// artists, but never DELETEs a row (a delete would cascade and wipe votes).
+// Safe to re-run against production.
+const updateSet = cols.split(',').filter(c => c !== 'slug').map(c => `${c}=excluded.${c}`).join(',\n  ');
+
 const sql = `-- AUTO-GENERATED from data/artists.json by scripts/gen-seed.mjs · do not edit by hand
-DELETE FROM artists;
 INSERT INTO artists (${cols}) VALUES
-${rows.join(',\n')};
+${rows.join(',\n')}
+ON CONFLICT(slug) DO UPDATE SET
+  ${updateSet};
 `;
 
 await writeFile(join(ROOT, 'db/0002_seed_artists.sql'), sql);

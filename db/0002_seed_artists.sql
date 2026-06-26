@@ -1,5 +1,4 @@
 -- AUTO-GENERATED from data/artists.json by scripts/gen-seed.mjs · do not edit by hand
-DELETE FROM artists;
 INSERT INTO artists (slug,stage_name,real_name,city_represented,city_of_origin,state,era,subgenre,language,tags,notable_tracks,popularity_tier,active_status,label,spotify_url,spotify_id,wikipedia_url,instagram_handle,image_url,is_votable) VALUES
 ('baba-sehgal','Baba Sehgal','Harjeet Singh Sehgal','Hyderabad','Lucknow','Telangana','OG','Pop-Rap','["Hindi","English","Telugu"]','["OG","mainstream","crossover"]','["Thanda Thanda Pani","Manjula","Dil Dhadke"]','C','Active','independent','https://open.spotify.com/artist/7hYZXC29LqX4vWGloviTyG','7hYZXC29LqX4vWGloviTyG','https://en.wikipedia.org/wiki/Baba_Sehgal','@babasehgal','https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e021d5e5118400187e7421295d0',1),
 ('bohemia','Bohemia','Roger David','Punjab','Karachi','Punjab','OG','Punjabi Rap','["Punjabi","English"]','["OG","melodic","storyteller"]','["Pesa Nasha Pyar","Kali Denali","Sade Naal Rehngi"]','B','Active','independent','https://open.spotify.com/artist/0SWOtgI95g7oVrP9halrmP','0SWOtgI95g7oVrP9halrmP','https://en.wikipedia.org/wiki/Bohemia_(rapper)','@itsbohemia','https://image-cdn-fa.spotifycdn.com/image/ab67616100005174786da5860b52e5395a3403e2',1),
@@ -90,4 +89,24 @@ INSERT INTO artists (slug,stage_name,real_name,city_represented,city_of_origin,s
 ('epr','EPR','Santhanam Srinivasan Iyer','Kolkata','Kolkata','West Bengal','Conscious Wave','Boom Bap / Lo-fi','["Hindi","English","Bengali"]','["lyrical","conscious","storyteller","underground"]','["Protest Poetry","Hain?","Ekla Cholo Re (rap version)"]','C','Active','independent','https://open.spotify.com/artist/5tusfwYTSzhe2meWRNp9tj','5tusfwYTSzhe2meWRNp9tj','https://en.wikipedia.org/wiki/Underground_Authority','@epr_svnslas_iyer','https://image-cdn-fa.spotifycdn.com/image/ab67616100005174d6e100ab9e769b8615b32357',1),
 ('arivu','Arivu','Arivarasu Kalainesan','Chennai','Arakkonam','Tamil Nadu','New Wave','Regional-Language','["Tamil"]','["lyrical","conscious","regional","viral"]','["Enjoy Enjaami","Neeye Oli","Anti-Indian"]','B','Active','Maajja / independent','https://open.spotify.com/artist/7rVV9d6vc4FLT752uRuk71','7rVV9d6vc4FLT752uRuk71','https://en.wikipedia.org/wiki/Arivu','@therukural','https://image-cdn-ak.spotifycdn.com/image/ab67616100005174592aa25b552ad03be20e16f5',1),
 ('dee-mc','Dee MC','Deepa Unnikrishnan','Kalyan','Kalyan','Maharashtra','Gully Wave','Gully Rap','["Hindi","English"]','["lyrical","conscious","underground","storyteller"]','["Dee=MC²","Pretty Eyes","MMM"]','C','Active','independent','https://open.spotify.com/artist/21x3ja7RPjkjLoaJhQmw9C','21x3ja7RPjkjLoaJhQmw9C',NULL,'@deemcofficial','https://image-cdn-ak.spotifycdn.com/image/ab676161000051749712c416dc961ca3ab81e951',1),
-('kaam-bhaari','Kaam Bhaari','Kunal Anand Pandagle','Mumbai','Kandivali','Maharashtra','Gully Wave','Gully Rap','["Hindi","Marathi"]','["lyrical","street","underground"]','["Kab Se Kab Tak","Zeher","Meter Down"]','C','Active','Art Nagar','https://open.spotify.com/artist/5bTYVMQ6vmt4Bm12hM59N3','5bTYVMQ6vmt4Bm12hM59N3',NULL,'@kaambhaari','https://image-cdn-fa.spotifycdn.com/image/ab67616100005174d3532bce5bc18517d56aa7ea',1);
+('kaam-bhaari','Kaam Bhaari','Kunal Anand Pandagle','Mumbai','Kandivali','Maharashtra','Gully Wave','Gully Rap','["Hindi","Marathi"]','["lyrical","street","underground"]','["Kab Se Kab Tak","Zeher","Meter Down"]','C','Active','Art Nagar','https://open.spotify.com/artist/5bTYVMQ6vmt4Bm12hM59N3','5bTYVMQ6vmt4Bm12hM59N3',NULL,'@kaambhaari','https://image-cdn-fa.spotifycdn.com/image/ab67616100005174d3532bce5bc18517d56aa7ea',1)
+ON CONFLICT(slug) DO UPDATE SET
+  stage_name=excluded.stage_name,
+  real_name=excluded.real_name,
+  city_represented=excluded.city_represented,
+  city_of_origin=excluded.city_of_origin,
+  state=excluded.state,
+  era=excluded.era,
+  subgenre=excluded.subgenre,
+  language=excluded.language,
+  tags=excluded.tags,
+  notable_tracks=excluded.notable_tracks,
+  popularity_tier=excluded.popularity_tier,
+  active_status=excluded.active_status,
+  label=excluded.label,
+  spotify_url=excluded.spotify_url,
+  spotify_id=excluded.spotify_id,
+  wikipedia_url=excluded.wikipedia_url,
+  instagram_handle=excluded.instagram_handle,
+  image_url=excluded.image_url,
+  is_votable=excluded.is_votable;

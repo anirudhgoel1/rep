@@ -181,6 +181,7 @@ async function handleImage(request, env, url) {
         headers: {
           'content-type': (obj.httpMetadata && obj.httpMetadata.contentType) || 'image/jpeg',
           'cache-control': 'public, max-age=604800',
+          'x-content-type-options': 'nosniff',
           etag: obj.httpEtag,
         },
       });
@@ -202,7 +203,7 @@ async function handleCard(request, env, url) {
     const obj = await env.MEDIA.get(`cards/${m[1]}.png`);
     if (obj) {
       return new Response(obj.body, {
-        headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400', etag: obj.httpEtag },
+        headers: { 'content-type': 'image/png', 'cache-control': 'public, max-age=86400', 'x-content-type-options': 'nosniff', etag: obj.httpEtag },
       });
     }
   } catch { /* fall through */ }
@@ -234,9 +235,16 @@ async function turnstileOk(env, request, token) {
   }
 }
 
+function safeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let out = 0;
+  for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return out === 0;
+}
+
 function adminOk(env, request) {
   const h = request.headers.get('authorization') || '';
-  return !!env.ADMIN_TOKEN && h === `Bearer ${env.ADMIN_TOKEN}`;
+  return !!env.ADMIN_TOKEN && safeEqual(h, `Bearer ${env.ADMIN_TOKEN}`);
 }
 
 /* ---------------------------------------------------------------- helpers */
@@ -264,7 +272,7 @@ function parseCookies(request) {
   return out;
 }
 
-/* returns { uid, setCookie? } — issues a stable anonymous id on first contact */
+/* returns { uid, setCookie? } · issues a stable anonymous id on first contact */
 function identify(request) {
   const cookies = parseCookies(request);
   if (cookies.rep_uid && /^[a-zA-Z0-9]{8,40}$/.test(cookies.rep_uid)) {
@@ -354,20 +362,22 @@ async function handleApi(request, env, url) {
     const scope = url.searchParams.get('scope') || 'all';
     const scopeClause = scope === 'all' ? 'scope IS NULL' : 'scope = ?2';
     const binds = scope === 'all' ? [type] : [type, scope];
+    // hidden ballots must not count toward the rankings (moderation)
+    const liveClause = 'list_id NOT IN (SELECT id FROM lists WHERE is_hidden = 1)';
 
     const pointsExpr = type === 'top5'
       ? 'SUM(6 - rank)'
       : 'SUM(rank)';
     const rows = await db.prepare(
       `SELECT artist_slug AS slug, ${pointsExpr} AS points, COUNT(DISTINCT list_id) AS ballots
-       FROM votes WHERE list_type = ?1 AND ${scopeClause}
+       FROM votes WHERE list_type = ?1 AND ${scopeClause} AND ${liveClause}
        GROUP BY artist_slug ORDER BY points DESC`
     ).bind(...binds).all();
 
     const data = rows.results || [];
     const totalPoints = data.reduce((s, r) => s + (r.points || 0), 0) || 1;
     const ballotRow = await db.prepare(
-      `SELECT COUNT(DISTINCT list_id) AS n FROM votes WHERE list_type = ?1 AND ${scopeClause}`
+      `SELECT COUNT(DISTINCT list_id) AS n FROM votes WHERE list_type = ?1 AND ${scopeClause} AND ${liveClause}`
     ).bind(...binds).first();
     const ballots = (ballotRow && ballotRow.n) || 0;
 
@@ -397,10 +407,11 @@ async function handleApi(request, env, url) {
         storedPicks = {};
         for (const [t, slugs] of Object.entries(picks)) {
           if (!tierRank[t] || !Array.isArray(slugs)) continue;
-          storedPicks[t] = slugs;
-          slugs.forEach(slug => flat.push([slug, tierRank[t]]));
+          const capped = slugs.slice(0, 30);
+          storedPicks[t] = capped;
+          capped.forEach(slug => flat.push([slug, tierRank[t]]));
         }
-        const ok = flat.length && await validSlugs(db, flat.map(p => p[0]));
+        const ok = flat.length && flat.length <= 60 && await validSlugs(db, flat.map(p => p[0]));
         if (ok) ranked = flat;
       }
     } else if (Array.isArray(picks)) {
@@ -439,7 +450,10 @@ async function handleApi(request, env, url) {
   // fetch a single list ------------------------------------------------
   if (route('GET', /^\/api\/lists\/[a-zA-Z0-9]+$/)) {
     const id = param(/^\/api\/lists\/([a-zA-Z0-9]+)$/);
-    const row = await db.prepare(`SELECT * FROM lists WHERE id = ?1 AND is_hidden = 0`).bind(id).first();
+    const row = await db.prepare(
+      `SELECT id, username, type, scope, picks, defense, upvotes, created_at
+       FROM lists WHERE id = ?1 AND is_hidden = 0`
+    ).bind(id).first();
     if (!row) return withCookie(json({ error: 'not_found' }, 404), setCookie);
     row.picks = safeParse(row.picks);
     return withCookie(json(row), setCookie);
@@ -512,6 +526,7 @@ async function handleApi(request, env, url) {
       } catch { /* race: another request created it */ }
       m = await db.prepare(`SELECT * FROM daily_matchup WHERE date = ?1`).bind(date).first();
     }
+    if (!m) return withCookie(json({ error: 'no_matchup' }, 503), setCookie);
     const myVote = await db.prepare(`SELECT pick FROM daily_votes WHERE user_id = ?1 AND date = ?2`).bind(uid, date).first();
     return withCookie(json({
       date, artist_a: m.artist_a, artist_b: m.artist_b, theme: m.theme,
@@ -571,8 +586,9 @@ async function handleApi(request, env, url) {
     if (!owner || owner.user_id !== uid) return withCookie(json({ error: 'not_yours' }, 403), setCookie);
     const buf = await request.arrayBuffer();
     if (buf.byteLength < 8 || buf.byteLength > 2000000) return withCookie(json({ error: 'bad_size' }, 400), setCookie);
-    const sig = new Uint8Array(buf.slice(0, 4));
-    if (!(sig[0] === 0x89 && sig[1] === 0x50 && sig[2] === 0x4e && sig[3] === 0x47)) {
+    const sig = new Uint8Array(buf.slice(0, 8));
+    const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+    if (!PNG.every((b, i) => sig[i] === b)) {
       return withCookie(json({ error: 'not_png' }, 400), setCookie);
     }
     await env.MEDIA.put(`cards/${id}.png`, buf, { httpMetadata: { contentType: 'image/png' } });

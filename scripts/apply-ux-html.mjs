@@ -87,7 +87,7 @@ async function patchIndex(html) {
     /<div class="hero-dark__cta">/,
     `<div class="hero-dark__cta">\n        <a href="#vault" class="btn-dark-ghost">explore the vault ↓</a>`
   );
-  // landing shell is special — add id main to shell content
+  // landing shell is special · add id main to shell content
   if (!out.includes('id="main"')) {
     out = out.replace('<div class="shell">\n\n  <nav class="chapter-jump"', '<div class="shell" id="main">\n\n  <nav class="chapter-jump"');
   }

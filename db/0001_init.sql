@@ -5,7 +5,7 @@
 -- ============================================================
 -- 1. Static reference: artists (seeded from data/artists.json)
 -- ============================================================
-CREATE TABLE artists (
+CREATE TABLE IF NOT EXISTS artists (
   slug TEXT PRIMARY KEY,
   stage_name TEXT NOT NULL,
   real_name TEXT,
@@ -32,16 +32,16 @@ CREATE TABLE artists (
   note TEXT,
   disambiguation TEXT
 );
-CREATE INDEX idx_artists_city ON artists(city_represented);
-CREATE INDEX idx_artists_state ON artists(state);
-CREATE INDEX idx_artists_era ON artists(era);
-CREATE INDEX idx_artists_subgenre ON artists(subgenre);
-CREATE INDEX idx_artists_tier ON artists(popularity_tier);
+CREATE INDEX IF NOT EXISTS idx_artists_city ON artists(city_represented);
+CREATE INDEX IF NOT EXISTS idx_artists_state ON artists(state);
+CREATE INDEX IF NOT EXISTS idx_artists_era ON artists(era);
+CREATE INDEX IF NOT EXISTS idx_artists_subgenre ON artists(subgenre);
+CREATE INDEX IF NOT EXISTS idx_artists_tier ON artists(popularity_tier);
 
 -- ============================================================
 -- 2. User-generated lists (top5, tier, scoped variants)
 -- ============================================================
-CREATE TABLE lists (
+CREATE TABLE IF NOT EXISTS lists (
   id TEXT PRIMARY KEY,                              -- 6-char base62
   user_id TEXT NOT NULL,
   username TEXT,                                    -- optional @handle
@@ -55,15 +55,15 @@ CREATE TABLE lists (
   is_featured INTEGER NOT NULL DEFAULT 0,           -- soft moderation flag
   is_hidden INTEGER NOT NULL DEFAULT 0              -- soft moderation flag
 );
-CREATE INDEX idx_lists_user ON lists(user_id);
-CREATE INDEX idx_lists_type_scope ON lists(type, scope, created_at DESC);
-CREATE INDEX idx_lists_upvotes ON lists(upvotes DESC, created_at DESC) WHERE is_hidden = 0;
-CREATE INDEX idx_lists_featured ON lists(is_featured DESC, upvotes DESC) WHERE is_hidden = 0;
+CREATE INDEX IF NOT EXISTS idx_lists_user ON lists(user_id);
+CREATE INDEX IF NOT EXISTS idx_lists_type_scope ON lists(type, scope, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_lists_upvotes ON lists(upvotes DESC, created_at DESC) WHERE is_hidden = 0;
+CREATE INDEX IF NOT EXISTS idx_lists_featured ON lists(is_featured DESC, upvotes DESC) WHERE is_hidden = 0;
 
 -- ============================================================
 -- 3. Aggregation source: votes (one row per user × artist × type × scope)
 -- ============================================================
-CREATE TABLE votes (
+CREATE TABLE IF NOT EXISTS votes (
   user_id TEXT NOT NULL,
   artist_slug TEXT NOT NULL,
   list_type TEXT NOT NULL CHECK (list_type IN ('top5','tier')),
@@ -75,13 +75,13 @@ CREATE TABLE votes (
   FOREIGN KEY (artist_slug) REFERENCES artists(slug) ON DELETE CASCADE,
   FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE CASCADE
 );
-CREATE INDEX idx_votes_aggregate ON votes(artist_slug, list_type, scope);
-CREATE INDEX idx_votes_list ON votes(list_id);
+CREATE INDEX IF NOT EXISTS idx_votes_aggregate ON votes(artist_slug, list_type, scope);
+CREATE INDEX IF NOT EXISTS idx_votes_list ON votes(list_id);
 
 -- ============================================================
 -- 4. Daily 1v1
 -- ============================================================
-CREATE TABLE daily_matchup (
+CREATE TABLE IF NOT EXISTS daily_matchup (
   date TEXT PRIMARY KEY,                            -- YYYY-MM-DD Asia/Kolkata
   artist_a TEXT NOT NULL,
   artist_b TEXT NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE daily_matchup (
   FOREIGN KEY (artist_b) REFERENCES artists(slug)
 );
 
-CREATE TABLE daily_votes (
+CREATE TABLE IF NOT EXISTS daily_votes (
   user_id TEXT NOT NULL,
   date TEXT NOT NULL,
   pick TEXT NOT NULL,                               -- artist_slug
@@ -101,12 +101,12 @@ CREATE TABLE daily_votes (
   FOREIGN KEY (date) REFERENCES daily_matchup(date),
   FOREIGN KEY (pick) REFERENCES artists(slug)
 );
-CREATE INDEX idx_daily_votes_date_pick ON daily_votes(date, pick);
+CREATE INDEX IF NOT EXISTS idx_daily_votes_date_pick ON daily_votes(date, pick);
 
 -- ============================================================
 -- 5. Defense-wall upvotes (one per user per list)
 -- ============================================================
-CREATE TABLE list_upvotes (
+CREATE TABLE IF NOT EXISTS list_upvotes (
   user_id TEXT NOT NULL,
   list_id TEXT NOT NULL,
   created_at INTEGER NOT NULL,
@@ -117,7 +117,7 @@ CREATE TABLE list_upvotes (
 -- ============================================================
 -- 6. v2 hook tables (created empty now so we don't migrate later)
 -- ============================================================
-CREATE TABLE beef_events (
+CREATE TABLE IF NOT EXISTS beef_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   occurred_on TEXT NOT NULL,                        -- YYYY-MM-DD
   actor_a TEXT NOT NULL,
@@ -129,10 +129,10 @@ CREATE TABLE beef_events (
   FOREIGN KEY (actor_a) REFERENCES artists(slug),
   FOREIGN KEY (actor_b) REFERENCES artists(slug)
 );
-CREATE INDEX idx_beef_actor_a ON beef_events(actor_a);
-CREATE INDEX idx_beef_actor_b ON beef_events(actor_b);
+CREATE INDEX IF NOT EXISTS idx_beef_actor_a ON beef_events(actor_a);
+CREATE INDEX IF NOT EXISTS idx_beef_actor_b ON beef_events(actor_b);
 
-CREATE TABLE predictions (
+CREATE TABLE IF NOT EXISTS predictions (
   user_id TEXT NOT NULL,
   artist_slug TEXT NOT NULL,
   predicted_at INTEGER NOT NULL,
@@ -144,7 +144,7 @@ CREATE TABLE predictions (
   FOREIGN KEY (artist_slug) REFERENCES artists(slug)
 );
 
-CREATE TABLE bars (
+CREATE TABLE IF NOT EXISTS bars (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL,
   prompt_date TEXT NOT NULL,
@@ -153,9 +153,9 @@ CREATE TABLE bars (
   created_at INTEGER NOT NULL,
   is_hidden INTEGER NOT NULL DEFAULT 0
 );
-CREATE INDEX idx_bars_prompt ON bars(prompt_date, upvotes DESC);
+CREATE INDEX IF NOT EXISTS idx_bars_prompt ON bars(prompt_date, upvotes DESC);
 
-CREATE TABLE suggestions (
+CREATE TABLE IF NOT EXISTS suggestions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id TEXT NOT NULL,
   stage_name TEXT NOT NULL,
@@ -164,9 +164,9 @@ CREATE TABLE suggestions (
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','admitted','rejected')),
   created_at INTEGER NOT NULL
 );
-CREATE INDEX idx_suggestions_status ON suggestions(status, upvotes DESC);
+CREATE INDEX IF NOT EXISTS idx_suggestions_status ON suggestions(status, upvotes DESC);
 
-CREATE TABLE suggestion_upvotes (
+CREATE TABLE IF NOT EXISTS suggestion_upvotes (
   user_id TEXT NOT NULL,
   suggestion_id INTEGER NOT NULL,
   created_at INTEGER NOT NULL,
@@ -175,7 +175,7 @@ CREATE TABLE suggestion_upvotes (
 );
 
 -- per-IP hourly write budget · see rateLimited() in src/worker.js
-CREATE TABLE rate_limits (
+CREATE TABLE IF NOT EXISTS rate_limits (
   key TEXT PRIMARY KEY,            -- '<ip>:<hour-bucket>'
   bucket INTEGER NOT NULL,
   n INTEGER NOT NULL DEFAULT 1
@@ -184,14 +184,14 @@ CREATE TABLE rate_limits (
 -- ============================================================
 -- 7. Metadata / kvish settings
 -- ============================================================
-CREATE TABLE settings (
+CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL,
   updated_at INTEGER NOT NULL
 );
 
 -- Seed default settings
-INSERT INTO settings (key, value, updated_at) VALUES
+INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES
   ('leaderboard_last_aggregated', '0', strftime('%s','now')),
   ('photo_pipeline_last_run', '0', strftime('%s','now')),
   ('schema_version', '1', strftime('%s','now'));

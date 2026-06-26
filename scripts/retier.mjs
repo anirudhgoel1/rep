@@ -1,8 +1,8 @@
 // Apply hardcore-DHH-fan tiering to artists.json.
 //
-// respect_tier  — what the heads on r/IndianHipHop / DHH discords actually reverence
+// respect_tier  · what the heads on r/IndianHipHop / DHH discords actually reverence
 //                 (pen game, OG cred, underground integrity)
-// is_crossover  — Bollywood-pop / radio-rap presence that hardcore fans side-eye.
+// is_crossover  · Bollywood-pop / radio-rap presence that hardcore fans side-eye.
 //                 these still exist in the roster but get BURIED in default rankings.
 //
 // usage: node scripts/retier.mjs

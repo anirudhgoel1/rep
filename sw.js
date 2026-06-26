@@ -1,7 +1,7 @@
 // Rep · minimal service worker.
 //
 // Two purposes:
-//   1. Make the site installable (Add to Home Screen) — the platform looks
+//   1. Make the site installable (Add to Home Screen) · the platform looks
 //      for ANY service worker registered with a fetch handler.
 //   2. Receive web-push notifications (shared VAPID with the central
 //      thanks/cron gateway at f1.anirudhgoel.xyz).
