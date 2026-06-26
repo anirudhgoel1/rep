@@ -5,15 +5,29 @@ type: app
 status: active
 live_url: https://rep.anirudhgoel.xyz
 repo: anirudhgoel1/rep
-last_updated: 2026-06-10
-last_shipped: 2026-06-10 (preview version uploaded · prod cutover pending owner go)
+last_updated: 2026-06-26
+last_shipped: 2026-06-26 (release-readiness pass · CSP/Turnstile blocker fixed, live via CI)
 tags: [cluster-app, music, dhh, hip-hop, pwa]
 ---
 
 ## What it is
 DHH (Desi Hip Hop) ranking and discovery platform. Top 5, tier list, India Top 50, city pride, defend wall, daily 1v1. Vanilla HTML/CSS/JS on Cloudflare Workers Static Assets, no build step. v5 Direction B (gully zine) · kraft + Anton Black + halftone + brutalist tiles.
 
-## Where we are (2026-06-10 hardening pass)
+## Live since 2026-06-14 · release-readiness pass 2026-06-26 (commit b472622)
+Prod has been live since 2026-06-14. The 2026-06-26 pass found and fixed a hidden
+blocker: the `_headers` CSP did not allowlist `challenges.cloudflare.com` while
+Turnstile enforcement was on, so the widget was CSP-blocked and every ballot/tier/
+suggestion POST 403'd. Voting was silently dead (0 ballots, misread as "no votes").
+Fixed and verified live in-browser (widget mints a token, zero CSP violations).
+Same pass: closed a `user_id` leak (impersonation), made hidden-ballot moderation
+actually remove votes from the leaderboard, capped tier ballots, swept 276 em/en
+dashes from the data + code, switched canonicals + sitemap to the extensionless
+(200) form, made versioned assets cache immutable, and made the D1 reseed
+non-destructive (was: `DELETE FROM artists` cascade-wiped votes). uid-dedup bypass
+on upvotes/daily accepted for launch (leaderboard is Turnstile-gated). After ANY
+Turnstile/CSP change, load /build in a real browser and confirm the token mints.
+
+## Earlier state (2026-06-10 hardening pass)
 - **Single wrangler.toml** (worker + D1 + assets). `wrangler.api.toml` deleted · the old
   dual-config foot-gun (static deploy silently killing /api) is gone.
 - **Worker hardened**: picks validated against the artists table (dupes and unknown slugs 400),
@@ -29,10 +43,12 @@ DHH (Desi Hip Hop) ranking and discovery platform. Top 5, tier list, India Top 5
   Schema NOT yet applied remotely (owner gate).
 - Preview version: https://4b539f95-rep.anirudhgoyal55.workers.dev (live site untouched).
 
-## To go fully live (owner go-ahead, ~2 min)
-1. `npm run db:remote` · applies schema + seeds 90 artists to remote D1
-2. `npm run deploy` · ships worker + assets to rep.anirudhgoel.xyz
-3. `gh secret set CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` on the repo · CI deploy
+## Deploy (live, automated)
+Push to `main` auto-deploys via CI (`.github/workflows/deploy.yml`, the cluster-cli
+reusable workflow; CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID set as repo secrets).
+`npm run deploy` is the manual hatch. D1 schema/seed are already applied to prod;
+`npm run db:remote` is now idempotent + non-destructive (safe to re-run).
+After every deploy: `node scripts/smoke-api.mjs https://rep.anirudhgoel.xyz`.
 
 ## Autonomous tooling
 `npm run preflight` · `bump` · `verify:wiki` · `gen:seed` · `render:og` · `smoke:api`
@@ -40,16 +56,20 @@ plus `node scripts/render-icons.mjs` (PWA icons) and `node scripts/add-meta.mjs`
 
 ## Key files
 - `wrangler.toml` · the only config · worker + D1 + `[[routes]] custom_domain` on rep.anirudhgoel.xyz
-- `.github/workflows/deploy.yml` · caller of cluster-cli reusable workflow (still needs repo secrets)
+- `.github/workflows/deploy.yml` · caller of cluster-cli reusable workflow (repo secrets set, auto-deploy green)
 - `index.html` + `app.js` + `styles.css` · v5 main entry
 - `*.v4-rejected.{html,css}.bak` · v4 graveyard, kept in repo, excluded from deploy
 - `scripts/` · local utility scripts
 - `data/` + `db/` · DHH artist/song data + D1 schema/seed
 
 ## Known remaining risks
-- Sybil voting is rate-limited per IP but not solved · real fix is Turnstile on POSTs (owner call).
-- No moderation endpoint · `is_hidden` exists in schema, flipping it is manual D1 for now.
-- `/X.html` 307-redirects to `/X` (Workers assets default) while canonicals say `.html` · cosmetic.
+- uid dedup: the anonymous `rep_uid` cookie is unsigned, so rotating it defeats per-user
+  dedup on upvotes + daily 1v1. Leaderboard ballots are Turnstile-gated so those are safe.
+  Accepted for launch; harden (Turnstile on upvotes, or HMAC-sign the uid) only if abuse shows.
+- Moderation is API-only (`/api/admin/*`, ADMIN_TOKEN). Hiding a list now also drops its
+  votes from the leaderboard. Still no admin UI · curl or a tiny authed page.
+- CI reuses `anirudhgoel1/cluster-cli/...@main` (mutable ref); Node version + whether it runs
+  preflight/smoke live in that repo. Pin to a tag/SHA and confirm Node 22 when next in cluster-cli.
 
 ## Cross-deps
 - None hard. Standalone app within the cluster.
